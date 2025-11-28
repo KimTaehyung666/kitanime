@@ -71,8 +71,15 @@
             border-color: var(--primary-color);
         }
 
+        /* CARD GRID - DEFAULT UNTUK DESKTOP */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
         .cover-img {
-            height: 200px;
+            height: 180px;
             object-fit: cover;
             width: 100%;
             transition: transform 0.3s ease;
@@ -83,7 +90,7 @@
         }
 
         .card-body {
-            padding: 16px;
+            padding: 12px;
         }
 
         .anime-title {
@@ -113,12 +120,6 @@
             color: inherit;
             display: block;
             height: 100%;
-        }
-
-        .card-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
         }
 
         .section-title {
@@ -586,24 +587,47 @@
             margin-left: 6px;
         }
 
-        /* RESPONSIVE UNTUK LAYOUT BARU */
-        @media (max-width: 768px) {
+        /* RESPONSIVE UNTUK MOBILE 3 ROW */
+        /* TABLET */
+        @media (max-width: 992px) {
             .card-grid {
                 grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-                gap: 12px;
+                gap: 16px;
             }
             
             .cover-img {
-                height: 180px;
+                height: 150px;
             }
             
             .anime-title {
                 font-size: 0.85rem;
                 min-height: 40px;
             }
+        }
+
+        /* MOBILE - 3 ROW */
+        @media (max-width: 796px) {
+            .card-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 12px;
+            }
+            
+            .cover-img {
+                height: 120px;
+            }
+            
+            .anime-title {
+                font-size: 0.75rem;
+                min-height: 32px;
+                -webkit-line-clamp: 2;
+            }
             
             .card-body {
-                padding: 12px;
+                padding: 8px;
+            }
+            
+            .episode-time {
+                font-size: 0.7rem;
             }
 
             .player-section {
@@ -633,10 +657,11 @@
             }
         }
 
-        @media (max-width: 576px) {
+        /* SMALL MOBILE */
+        @media (max-width: 720px) {
             .card-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 10px;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
             }
             
             .container {
@@ -645,16 +670,21 @@
             }
             
             .cover-img {
-                height: 160px;
+                height: 100px;
             }
             
             .anime-title {
-                font-size: 0.8rem;
-                min-height: 36px;
+                font-size: 0.7rem;
+                min-height: 28px;
+                -webkit-line-clamp: 2;
             }
             
             .card-body {
-                padding: 10px;
+                padding: 6px;
+            }
+            
+            .episode-time {
+                font-size: 0.65rem;
             }
 
             .player-section {
@@ -688,6 +718,23 @@
                 min-width: 70px;
                 padding: 4px 6px;
                 font-size: 0.65rem;
+            }
+        }
+
+        /* VERY SMALL MOBILE */
+        @media (max-width: 480px) {
+            .card-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+            }
+            
+            .cover-img {
+                height: 110px;
+            }
+            
+            .anime-title {
+                font-size: 0.75rem;
+                min-height: 32px;
             }
         }
     </style>
