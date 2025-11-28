@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block title %}{{ anime.title }} - Kitanime{% endblock %}
+
+{% block content %}
+{% if anime.title %}
+<div class="row">
+    <div class="col-lg-4 col-md-5 mb-3">
+        <div class="info-sidebar">
+            <h2 class="h4 mb-1">{{ anime.title }}</h2>
+            <img src="{{ anime.cover }}" class="img-fluid rounded mb-3" alt="{{ anime.title }}"
+                 onerror="this.src='https://via.placeholder.com/400x500/dc2626/ffffff?text=No+Cover'">
+            
+            <!-- SINOPISIS -->
+            <h5 class="mb-2"><i class="fas fa-book-open text-primary me-2"></i>Sinopsis</h5>
+            {% if anime.description %}
+            <div class="sinopsis-text">
+                <p class="small text-muted" style="line-height: 1.6; text-align: justify;">
+                    {{ anime.description }}
+                </p>
+            </div>
+            {% else %}
+            <p class="text-muted small mb-0">Sinopsis tidak tersedia</p>
+            {% endif %}
+            
+            <!-- INFORMASI DETAIL -->
+            <h5 class="mb-2 mt-3"><i class="fas fa-info-circle text-primary me-2"></i>Informasi</h5>
+            {% if anime.info %}
+            <div class="small">
+                {% for key, value in anime.info.items() %}
+                <div class="d-flex justify-content-between py-1 border-bottom">
+                    <span class="text-muted">{{ key }}</span>
+                    <span class="fw-semibold">{{ value }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted small mb-0">Informasi tidak tersedia</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="col-lg-8 col-md-7">
+        <!-- PLAYER SECTION - GABUNGAN IFRAME + NAVIGATION + PROVIDER -->
+        <div class="player-section">
+            <!-- IFRAME PLAYER -->
+            <div class="player-wrapper">
+                {% if anime.stream_links or anime.episode_servers %}
+                    <div class="ratio ratio-16x9 mb-3">
+                        <iframe id="videoPlayer" 
+                                src="{% if anime.stream_links %}{{ anime.stream_links[0].url }}{% elif anime.episode_servers and anime.episode_servers[0].episodes %}{{ anime.episode_servers[0].episodes[0].url }}{% endif %}" 
+                                frameborder="0" 
+                                allowfullscreen
+                                allow="autoplay; encrypted-media"
+                                style="border-radius: 8px;">
+                        </iframe>
+                    </div>
+                    
+                    <!-- INFO STREAM -->
+                    <div class="stream-info">
+                        <div class="alert alert-info py-2 mb-3 small">
+                            <i class="fas fa-info-circle me-2"></i>
+                            {% if anime.stream_links %}
+                            Provider: <strong>{{ anime.stream_links[0].provider }}</strong> | 
+                            Quality: <strong>{{ anime.stream_links[0].quality }}</strong>
+                            {% elif anime.episode_servers %}
+                            Pilih episode dari server di bawah
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- EPISODE NAVIGATION + PROVIDER SELECTION - GABUNGAN -->
+                    <div class="stream-controls">
+                        <!-- EPISODE NAVIGATION -->
+                        {% if prev_episode or next_episode %}
+                        <div class="episode-navigation mb-3">
+                            <div class="episode-nav-grid">
+                                {% if prev_episode %}
+                                <a href="/anime/{{ prev_episode.url.replace('https://ww1.anoboy.boo/', '') }}" 
+                                   class="episode-nav-btn prev">
+                                    <i class="fas fa-chevron-left episode-nav-icon me-1"></i>
+                                    Prev
+                                </a>
+                                {% else %}
+                                <button class="episode-nav-btn prev" disabled>
+                                    <i class="fas fa-chevron-left episode-nav-icon me-1"></i>
+                                    Prev
+                                </button>
+                                {% endif %}
+                                
+                                {% if next_episode %}
+                                <a href="/anime/{{ next_episode.url.replace('https://ww1.anoboy.boo/', '') }}" 
+                                   class="episode-nav-btn next">
+                                    Next
+                                    <i class="fas fa-chevron-right episode-nav-icon ms-1"></i>
+                                </a>
+                                {% else %}
+                                <button class="episode-nav-btn next" disabled>
+                                    Next
+                                    <i class="fas fa-chevron-right episode-nav-icon ms-1"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- STREAMING PROVIDER SELECTION -->
+                        {% if anime.episode_servers %}
+                        <div class="provider-selection">
+                            <h6 class="mb-2"><i class="fas fa-server me-2"></i>Pilih Server Streaming</h6>
+                            <div class="provider-buttons">
+                                {% for server in anime.episode_servers %}
+                                <div class="server-option">
+                                    <div class="server-name">{{ server.server }}</div>
+                                    <div class="episode-buttons">
+                                        {% for episode in server.episodes %}
+                                        <button class="episode-btn" onclick="changeVideo('{{ episode.url }}', '{{ episode.title }}')">
+                                            {{ episode.title }}
+                                        </button>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-exclamation-triangle fa-2x text-muted mb-2"></i>
+                        <h6 class="text-muted">Stream Tidak Tersedia</h6>
+                        <p class="text-muted small mb-0">Gunakan link download di bawah</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- DOWNLOAD SECTIONS -->
+        {% if anime.batch_downloads %}
+        <div class="download-section">
+            <div class="batch-section">
+                <h5 class="mb-0"><i class="fas fa-archive me-2"></i>Batch Download</h5>
+                <small>Download seluruh episode sekaligus</small>
+            </div>
+            {% for provider in anime.batch_downloads %}
+            <div class="provider-card">
+                <div class="provider-header">
+                    <span class="provider-name">{{ provider.provider }}</span>
+                    <span class="batch-badge">BATCH</span>
+                </div>
+                <div class="quality-buttons">
+                    {% for link in provider.links %}
+                    <a href="{{ link.url }}" target="_blank" class="quality-btn batch-btn">
+                        {{ link.quality }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% if anime.download_links %}
+        <div class="download-section">
+            <h5 class="mb-2"><i class="fas fa-download me-2"></i>Download</h5>
+            {% for provider in anime.download_links %}
+            <div class="provider-card">
+                <div class="provider-header">
+                    <span class="provider-name">{{ provider.provider }}</span>
+                </div>
+                <div class="quality-buttons">
+                    {% for link in provider.links %}
+                    <a href="{{ link.url }}" target="_blank" class="quality-btn">
+                        {{ link.quality }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <!-- SEASON SECTIONS -->
+        {% if anime.seasons %}
+        <div class="download-section">
+            <h5 class="mb-3"><i class="fas fa-layer-group me-2"></i>Season & Episode</h5>
+            {% for season in anime.seasons %}
+            <div class="season-section">
+                <div class="season-header">
+                    {{ season.name }}
+                </div>
+                <div class="episode-list">
+                    {% for episode in season.episodes %}
+                    <div class="episode-item">
+                        <a href="/anime/{{ episode.url.replace('https://ww1.anoboy.boo/', '') }}" class="episode-link">
+                            <i class="fas fa-play-circle me-2 text-primary"></i>{{ episode.title }}
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% else %}
+<div class="alert alert-danger text-center py-3">
+    <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+    <h5>Anime Tidak Ditemukan</h5>
+    <p class="mb-0 small">Terjadi error saat memuat data anime</p>
+</div>
+{% endif %}
+{% endblock %}
