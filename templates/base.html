@@ -330,6 +330,8 @@
             transition: all 0.3s ease;
             display: block;
             font-weight: 500;
+            cursor: pointer;
+            margin: 2px;
         }
 
         .episode-btn:hover {
@@ -337,6 +339,12 @@
             color: white;
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .episode-btn.active {
+            background: var(--accent-color) !important;
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4) !important;
         }
 
         .url-info {
@@ -427,6 +435,141 @@
             box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
         }
 
+        /* STYLE UNTUK DROPDOWN QUALITY */
+        .quality-dropdown {
+            margin-bottom: 16px;
+        }
+
+        .quality-dropdown .dropdown-toggle {
+            background: var(--primary-color);
+            border: 1px solid var(--primary-color);
+            color: white;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .quality-dropdown .dropdown-toggle:hover {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .quality-dropdown .dropdown-menu {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .quality-dropdown .dropdown-item {
+            color: var(--text-primary);
+            font-size: 0.8rem;
+            padding: 8px 16px;
+            transition: all 0.2s ease;
+        }
+
+        .quality-dropdown .dropdown-item:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .quality-dropdown .dropdown-item.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .quality-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .quality-server {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            margin-left: 8px;
+        }
+
+        /* STYLE UNTUK DOWNLOAD DROPDOWN - RAPIH */
+        .download-dropdown {
+            margin-bottom: 10px;
+        }
+
+        .download-dropdown .dropdown-toggle {
+            background: var(--section-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            width: 100%;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .download-dropdown .dropdown-toggle:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .download-dropdown .dropdown-menu {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            padding: 5px 0;
+        }
+
+        .download-dropdown .dropdown-item {
+            color: var(--text-primary);
+            font-size: 0.8rem;
+            padding: 8px 12px;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .download-dropdown .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .download-dropdown .dropdown-item:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .download-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .download-quality {
+            font-weight: 500;
+            font-size: 0.8rem;
+        }
+
+        .download-provider {
+            font-size: 0.75rem;
+            opacity: 0.8;
+            font-weight: 600;
+        }
+
         /* STYLE UNTUK PROVIDER SELECTION */
         .provider-selection {
             margin-top: 16px;
@@ -488,12 +631,18 @@
             box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
         }
 
+        .episode-buttons .episode-btn.active {
+            background: var(--accent-color) !important;
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4) !important;
+        }
+
         /* PERBAIKAN EPISODE NAVIGATION UNTUK LAYOUT BARU */
         .episode-navigation {
             background: transparent;
             border: none;
             padding: 0;
-            margin: 0 0 16px 0;
+            margin: 16px 0 0 0;
         }
 
         .episode-nav-grid {
@@ -819,11 +968,46 @@
             const iframe = document.getElementById('videoPlayer');
             const videoTitle = document.getElementById('videoTitle');
             
+            // Update iframe source
             iframe.src = url;
+            
+            // Update title if available
             if (videoTitle) {
                 videoTitle.textContent = title;
             }
+            
+            // Update dropdown text
+            const dropdownToggle = document.querySelector('.quality-dropdown .dropdown-toggle');
+            if (dropdownToggle) {
+                dropdownToggle.innerHTML = `<i class="fas fa-play-circle me-2"></i>${title}`;
+            }
+            
+            // Highlight active dropdown item
+            document.querySelectorAll('.quality-dropdown .dropdown-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('data-url') === url) {
+                    item.classList.add('active');
+                }
+            });
+            
+            // Scroll to player
+            iframe.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
+
+        // Initialize dropdown with first quality
+        document.addEventListener('DOMContentLoaded', function() {
+            const firstQuality = document.querySelector('.quality-dropdown .dropdown-item');
+            if (firstQuality) {
+                const url = firstQuality.getAttribute('data-url');
+                const title = firstQuality.getAttribute('data-title');
+                firstQuality.classList.add('active');
+                
+                const dropdownToggle = document.querySelector('.quality-dropdown .dropdown-toggle');
+                if (dropdownToggle) {
+                    dropdownToggle.innerHTML = `<i class="fas fa-play-circle me-2"></i>${title}`;
+                }
+            }
+        });
     </script>
 </body>
 </html>

@@ -281,42 +281,80 @@ class AnimeScraper:
             
             prev_next = {"prev": None, "next": None}
             
-            # Method 1: Cari dari navigasi div
+            # METHOD 1: Cari dari navigasi div dengan struktur yang lebih spesifik
             navigasi_div = soup.find('div', id='navigasi')
             if navigasi_div:
-                links = navigasi_div.find_all('a', href=True)
+                # Cari semua link navigasi
+                nav_links = navigasi_div.find_all('a', href=True)
                 
-                for link in links:
+                for link in nav_links:
                     href = link.get('href', '')
                     if not href or href == '#' or 'javascript' in href:
                         continue
                     
-                    # Cek berdasarkan teks atau class icon
-                    link_text = link.get_text(strip=True).lower()
-                    icon_classes = link.find('i')
+                    # Skip link iklan
+                    if any(ad_domain in href for ad_domain in ['avenue56dancestudios.com', 'playbook88', 'ads']):
+                        continue
                     
-                    # Deteksi prev episode
-                    if (any(word in link_text for word in ['sebelum', 'previous', 'prev', '←']) or
-                        (icon_classes and any(cls in str(icon_classes.get('class', [])) for cls in ['fa-backward', 'fa-chevron-left', 'fa-arrow-left']))):
+                    # Cek parent element untuk menentukan prev/next
+                    parent = link.parent
+                    if parent and 'widget-title' in parent.get('class', []):
+                        parent_text = parent.get_text(strip=True).lower()
+                        
+                        # Deteksi prev episode
+                        if any(keyword in parent_text for keyword in ['sebelum', 'previous', 'prev', 'fast-backward', '←']):
+                            prev_next["prev"] = {
+                                "url": self.resolve_url(href),
+                                "title": link.get_text(strip=True) or "Episode Sebelumnya"
+                            }
+                        
+                        # Deteksi next episode
+                        elif any(keyword in parent_text for keyword in ['selanj', 'next', 'lanjut', 'fast-forward', '→']):
+                            prev_next["next"] = {
+                                "url": self.resolve_url(href),
+                                "title": link.get_text(strip=True) or "Episode Selanjutnya"
+                            }
+            
+            # METHOD 2: Cari berdasarkan struktur h3 widget-title langsung
+            if not prev_next["prev"] and not prev_next["next"]:
+                widget_titles = soup.find_all('h3', class_='widget-title')
+                
+                for widget in widget_titles:
+                    widget_text = widget.get_text(strip=True).lower()
+                    link = widget.find('a', href=True)
+                    
+                    if not link:
+                        continue
+                        
+                    href = link.get('href', '')
+                    if not href or any(ad_domain in href for ad_domain in ['avenue56dancestudios.com']):
+                        continue
+                    
+                    # Deteksi berdasarkan icon dan text
+                    icon = widget.find('i')
+                    icon_classes = icon.get('class', []) if icon else []
+                    
+                    # Prev episode detection
+                    if (any(keyword in widget_text for keyword in ['sebelum', 'previous', 'prev']) or
+                        (icon and any(cls in icon_classes for cls in ['fa-fast-backward', 'fa-backward', 'fa-chevron-left']))):
                         prev_next["prev"] = {
                             "url": self.resolve_url(href),
-                            "title": "Episode Sebelumnya"
+                            "title": link.get_text(strip=True) or "Episode Sebelumnya"
                         }
                     
-                    # Deteksi next episode
-                    elif (any(word in link_text for word in ['selanj', 'next', 'lanjut', '→']) or
-                          (icon_classes and any(cls in str(icon_classes.get('class', [])) for cls in ['fa-forward', 'fa-chevron-right', 'fa-arrow-right']))):
+                    # Next episode detection  
+                    elif (any(keyword in widget_text for keyword in ['selanj', 'next', 'lanjut']) or
+                          (icon and any(cls in icon_classes for cls in ['fa-fast-forward', 'fa-forward', 'fa-chevron-right']))):
                         prev_next["next"] = {
                             "url": self.resolve_url(href),
-                            "title": "Episode Selanjutnya"
+                            "title": link.get_text(strip=True) or "Episode Selanjutnya"
                         }
             
-            # Method 2: Cari dari season list jika navigasi tidak ditemukan
+            # METHOD 3: Fallback - cari dari season list
             if not prev_next["prev"] and not prev_next["next"]:
                 seasons = self.extract_seasons_for_nav(soup)
                 current_path = current_url.replace('https://ww1.anoboy.boo/', '')
                 
-                # Cari posisi current episode dalam season
                 for season in seasons:
                     for i, episode in enumerate(season["episodes"]):
                         episode_path = episode["url"].replace('https://ww1.anoboy.boo/', '')
@@ -337,39 +375,6 @@ class AnimeScraper:
                                     "title": next_ep["title"]
                                 }
                             break
-            
-            # Method 3: Cari dari semua link di page sebagai fallback
-            if not prev_next["prev"] and not prev_next["next"]:
-                all_links = soup.find_all('a', href=True)
-                current_title = soup.find('h1')
-                current_title_text = current_title.get_text(strip=True) if current_title else ""
-                
-                # Extract episode number from current title
-                current_ep_match = re.search(r'episode\s*(\d+)', current_title_text.lower())
-                current_ep = int(current_ep_match.group(1)) if current_ep_match else None
-                
-                if current_ep:
-                    for link in all_links:
-                        href = link.get('href', '')
-                        link_text = link.get_text(strip=True)
-                        
-                        if not href or href == '#' or 'javascript' in href:
-                            continue
-                        
-                        # Cari episode sebelumnya
-                        prev_match = re.search(r'episode\s*(\d+)', link_text.lower())
-                        if prev_match:
-                            ep_num = int(prev_match.group(1))
-                            if ep_num == current_ep - 1:
-                                prev_next["prev"] = {
-                                    "url": self.resolve_url(href),
-                                    "title": link_text
-                                }
-                            elif ep_num == current_ep + 1:
-                                prev_next["next"] = {
-                                    "url": self.resolve_url(href),
-                                    "title": link_text
-                                }
             
             return prev_next
             
@@ -540,7 +545,7 @@ class AnimeScraper:
                                 key not in detail["info"]):
                                 detail["info"][key] = value_clean
             
-            # EKSTRAKSI STREAMING LINKS
+            # EKSTRAKSI STREAMING LINKS - FIXED UNTUK MULTIPLE QUALITY
             self.extract_streaming_servers(soup, detail)
             
             if not detail["stream_links"]:
@@ -611,6 +616,65 @@ class AnimeScraper:
         except Exception as e:
             print(f"Error in get_anime_detail: {e}")
             return {}
+
+    def extract_streaming_servers(self, soup, detail):
+        """Extract streaming servers dengan support multiple quality"""
+        episode_servers = []
+        
+        # METHOD 1: Extract dari struktur mirror/vmiror
+        mirror_divs = soup.find_all("div", class_=["vmiror", "miror"])
+        
+        for mirror_div in mirror_divs:
+            server_text = mirror_div.get_text(strip=True)
+            server_name = "Unknown"
+            
+            # Deteksi nama server dari text
+            if 'btube' in server_text.lower() or 'b-tube' in server_text.lower():
+                server_name = "B-Tube"
+            elif 'yup' in server_text.lower():
+                server_name = "YUp"
+            elif 'zippyshare' in server_text.lower():
+                server_name = "Zippyshare"
+            elif 'racaty' in server_text.lower():
+                server_name = "Racaty"
+            
+            episodes = []
+            quality_links = mirror_div.find_all("a", id="allmiror")
+            
+            for link in quality_links:
+                if link.get("data-video"):
+                    quality_text = link.get_text(strip=True)
+                    video_url = self.resolve_url(link["data-video"])
+                    
+                    episode_data = {
+                        "title": f"{server_name} - {quality_text}",
+                        "url": video_url,
+                        "server": server_name,
+                        "quality": quality_text
+                    }
+                    episodes.append(episode_data)
+            
+            if episodes:
+                episode_servers.append({
+                    "server": server_name,
+                    "episodes": episodes
+                })
+        
+        # METHOD 2: Extract dari iframe utama sebagai fallback
+        if not episode_servers:
+            iframe = soup.find("iframe", id="mediaplayer")
+            if iframe and iframe.get("src"):
+                episode_servers.append({
+                    "server": "B-Tube",
+                    "episodes": [{
+                        "title": "B-Tube - Default Quality",
+                        "url": self.resolve_url(iframe["src"]),
+                        "server": "B-Tube",
+                        "quality": "360p-720p"
+                    }]
+                })
+        
+        detail["episode_servers"] = episode_servers
 
     def clean_movie_season_description(self, text, title):
         """Bersihkan deskripsi khusus untuk movie dan season - HAPUS UPLOAD INFO"""
@@ -691,43 +755,6 @@ class AnimeScraper:
                 "links": links,
                 "type": "batch"
             })
-
-    def extract_streaming_servers(self, soup, detail):
-        """Extract streaming servers untuk anime dengan struktur episode streaming"""
-        episode_servers = []
-        
-        server_divs = soup.find_all("div", class_=["satu", "dua", "tiga", "empat"])
-        
-        for server_div in server_divs:
-            server_name = "Unknown"
-            if 'satu' in server_div.get('class', []):
-                server_name = "B-Tube"
-            elif 'dua' in server_div.get('class', []):
-                server_name = "B-Tube HD"
-            elif 'tiga' in server_div.get('class', []):
-                server_name = "Zippyshare"
-            elif 'empat' in server_div.get('class', []):
-                server_name = "Yup"
-            
-            episodes = []
-            episode_links = server_div.find_all("a", id="allvideo")
-            
-            for link in episode_links:
-                if link.get("data-video"):
-                    episode_data = {
-                        "title": link.text.strip(),
-                        "url": self.resolve_url(link["data-video"]),
-                        "server": server_name
-                    }
-                    episodes.append(episode_data)
-            
-            if episodes:
-                episode_servers.append({
-                    "server": server_name,
-                    "episodes": episodes
-                })
-        
-        detail["episode_servers"] = episode_servers
 
     def extract_seasons(self, soup, detail):
         """Extract season structure - FIXED UNTUK MOVIE DAN BATCH"""
