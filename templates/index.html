@@ -5,10 +5,11 @@
 <div class="row mb-4">
     <div class="col-12">
         <h2 class="section-title">Selamat Datang di KitaNime</h2>
-        <p class="text-muted mb-3">Platform streaming anime subtitle indonesia terlengkap. Nikmati ribuan anime berkualitas tinggi dengan subtitle indonesia yang akurat dan tanpa iklan</p>
+        <p class="text-muted mb-4">Platform streaming anime subtitle indonesia terlengkap. Nikmati ribuan anime berkualitas tinggi dengan subtitle indonesia yang akurat dan tanpa iklan</p>
     </div>
 </div>
 
+<!-- ✅ KARTU: TEKS WAKTU RAPIH, TANPA TITIK KUNING, TULISAN UP SEKALI SAJA -->
 <div class="card-grid">
     {% for anime in anime_list %}
     <a href="/anime/{{ anime.link.replace('https://ww1.anoboy.boo/', '') }}" class="anime-card-link">
@@ -18,7 +19,8 @@
             <div class="card-body">
                 <div class="anime-title">{{ anime.title }}</div>
                 <div class="episode-time">
-                    <i class="fas fa-clock me-1"></i>{{ anime.jam }}
+                	{{ anime.jam }}
+                     
                 </div>
             </div>
         </div>
@@ -34,21 +36,22 @@
     {% endfor %}
 </div>
 
-<div class="row mt-3">
+<!-- Pagination -->
+<div class="row mt-4 mb-5">
     <div class="col-12">
         <nav aria-label="Page navigation">
             <ul class="pagination justify-content-center pagination-sm">
                 <li class="page-item {% if current_page == 1 %}disabled{% endif %}">
                     <a class="page-link" href="/?page={{ current_page - 1 }}">
-                        <i class="fas fa-chevron-left me-1"></i>Prev
+                        <i class=""></i> Prev
                     </a>
                 </li>
                 <li class="page-item">
-                    <span class="page-link">Page {{ current_page }}</span>
+                    <span class="page-link">{{ current_page }}</span>
                 </li>
                 <li class="page-item">
                     <a class="page-link" href="/?page={{ current_page + 1 }}">
-                        Next <i class="fas fa-chevron-right ms-1"></i>
+                        Next <i class=""></i>
                     </a>
                 </li>
             </ul>
@@ -58,14 +61,15 @@
 
 <!-- Featured Movies Section -->
 {% if featured_movies %}
-<div class="row mt-5">
+<div class="row mb-4">
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="section-title mb-0">Featured Movies</h2>
-            <a href="/movies" class="btn btn-outline-primary btn-sm">
-                Lihat Semua <i class="fas fa-arrow-right ms-1"></i>
+            <h2 class="section-title h4 mb-0">Movies</h2>
+            <a href="/movies" class="btn btn-red btn-sm">
+                Lihat Semua <i class=""></i>
             </a>
         </div>
+
         <div class="card-grid">
             {% for movie in featured_movies %}
             <a href="/anime/{{ movie.link.replace('https://ww1.anoboy.boo/', '') }}" class="anime-card-link">
@@ -75,7 +79,7 @@
                     <div class="card-body">
                         <div class="anime-title">{{ movie.title }}</div>
                         <div class="episode-time">
-                            <i class="fas fa-film me-1 text-warning"></i>Movie
+                        	<i class="fas fa-film me-1 text-warning"></i>Movie
                         </div>
                     </div>
                 </div>

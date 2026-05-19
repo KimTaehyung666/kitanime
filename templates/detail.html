@@ -1,227 +1,186 @@
 {% extends "base.html" %}
-
 {% block title %}{{ anime.title }} - Kitanime{% endblock %}
 
 {% block content %}
 {% if anime.title %}
-<div class="row">
-    <div class="col-lg-4 col-md-5 mb-3">
-        <div class="info-sidebar">
-            <h2 class="h4 mb-1">{{ anime.title }}</h2>
-            <img src="{{ anime.cover }}" class="img-fluid rounded mb-3" alt="{{ anime.title }}"
+
+<div class="row g-3">
+    <!-- SIDEBAR INFO -->
+    <div class="col-lg-4 col-md-5">
+        <div class="detail-card">
+            <img src="{{ anime.cover }}" class="img-fluid rounded-3 mb-3" alt="{{ anime.title }}"
                  onerror="this.src='https://via.placeholder.com/400x500/dc2626/ffffff?text=No+Cover'">
-            
-            <!-- SINOPISIS -->
+            <h2 class="h5 fw-bold mb-2">{{ anime.title }}</h2>
+
+            <!-- ✅ Sinopsis kelihatan jelas -->
             {% if anime.description %}
-            <div class="sinopsis-text">
-                <p class="small text-muted" style="line-height: 1.6; text-align: justify;">
-                    {{ anime.description }}
-                </p>
-            </div>
+            <p class="sinopsis-text mt-3">
+                {{ anime.description }}
+            </p>
             {% else %}
-            <p class="text-muted small mb-0">Sinopsis tidak tersedia</p>
+            <p class="text-muted small fst-italic mt-2">Sinopsis tidak tersedia</p>
             {% endif %}
-            
-            <!-- INFORMASI DETAIL -->
-            <h5 class="mb-2 mt-3"><i class="fas fa-info-circle text-primary me-2"></i>Informasi</h5>
+
+            <h6 class="mt-4 mb-2 fw-semibold"><i class="fas fa-info-circle text-primary me-2"></i>Informasi</h6>
             {% if anime.info %}
             <div class="small">
                 {% for key, value in anime.info.items() %}
-                <div class="d-flex justify-content-between py-1 border-bottom">
+                <div class="d-flex justify-content-between py-2 border-bottom border-secondary">
                     <span class="text-muted">{{ key }}</span>
-                    <span class="fw-semibold">{{ value }}</span>
+                    <span>{{ value }}</span>
                 </div>
                 {% endfor %}
             </div>
-            {% else %}
-            <p class="text-muted small mb-0">Informasi tidak tersedia</p>
             {% endif %}
         </div>
     </div>
-    
+
+    <!-- KONTEN UTAMA -->
     <div class="col-lg-8 col-md-7">
-        <!-- PLAYER SECTION - GABUNGAN IFRAME + DROPDOWN + NAVIGATION -->
-        <div class="player-section">
-            <!-- IFRAME PLAYER -->
-            <div class="player-wrapper">
-                {% if anime.stream_links or anime.episode_servers %}
-                    <div class="ratio ratio-16x9 mb-3">
-                        <iframe id="videoPlayer" 
-                                src="{% if anime.stream_links %}{{ anime.stream_links[0].url }}{% elif anime.episode_servers and anime.episode_servers[0].episodes %}{{ anime.episode_servers[0].episodes[0].url }}{% endif %}" 
-                                frameborder="0" 
-                                allowfullscreen
-                                allow="autoplay; encrypted-media"
-                                style="border-radius: 8px;">
-                        </iframe>
-                    </div>
-                    
-                    <!-- DROPDOWN QUALITY SELECTION -->
-                    {% if anime.episode_servers %}
-                    <div class="quality-dropdown">
-                        <div class="dropdown">
-                            <button class="btn btn-primary dropdown-toggle" type="button" id="qualityDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-play-circle me-2"></i>
-                                {% if anime.episode_servers and anime.episode_servers[0].episodes %}
-                                    {{ anime.episode_servers[0].episodes[0].quality }} - {{ anime.episode_servers[0].server }}
-                                {% else %}
-                                    Pilih Kualitas
-                                {% endif %}
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="qualityDropdown">
-                                {% for server in anime.episode_servers %}
-                                    {% for episode in server.episodes %}
-                                    <li>
-                                        <a class="dropdown-item" href="#" 
-                                           data-url="{{ episode.url }}" 
-                                           data-title="{{ episode.quality }} - {{ server.server }}"
-                                           onclick="changeVideo('{{ episode.url }}', '{{ episode.quality }} - {{ server.server }}')">
-                                            <div class="quality-option">
-                                                <span>{{ episode.quality }}</span>
-                                                <span class="quality-server">{{ server.server }}</span>
-                                            </div>
-                                        </a>
-                                    </li>
-                                    {% endfor %}
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    </div>
-                    {% endif %}
-                    
-                    <!-- EPISODE NAVIGATION -->
-                    {% if prev_episode or next_episode %}
-                    <div class="episode-navigation">
-                        <div class="episode-nav-grid">
-                            {% if prev_episode %}
-                            <a href="/anime/{{ prev_episode.url.replace('https://ww1.anoboy.boo/', '') }}" 
-                               class="episode-nav-btn prev">
-                                <i class="fas fa-chevron-left episode-nav-icon me-1"></i>
-                                {{ prev_episode.title }}
-                            </a>
-                            {% else %}
-                            <button class="episode-nav-btn prev" disabled>
-                                <i class="fas fa-chevron-left episode-nav-icon me-1"></i>
-                                Prev Episode
-                            </button>
-                            {% endif %}
-                            
-                            {% if next_episode %}
-                            <a href="/anime/{{ next_episode.url.replace('https://ww1.anoboy.boo/', '') }}" 
-                               class="episode-nav-btn next">
-                                {{ next_episode.title }}
-                                <i class="fas fa-chevron-right episode-nav-icon ms-1"></i>
-                            </a>
-                            {% else %}
-                            <button class="episode-nav-btn next" disabled>
-                                Next Episode
-                                <i class="fas fa-chevron-right episode-nav-icon ms-1"></i>
-                            </button>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endif %}
-                    
+        <!-- PLAYER -->
+        {% if anime.stream_links or anime.episode_servers %}
+        <div class="detail-card">
+            <div class="ratio ratio-16x9 mb-3 rounded-3 overflow-hidden">
+                <iframe id="videoPlayer" 
+                        src="{% if anime.stream_links %}{{ anime.stream_links[0].url }}{% else %}{{ anime.episode_servers[0].episodes[0].url }}{% endif %}" 
+                        frameborder="0" allowfullscreen allow="autoplay; encrypted-media">
+                </iframe>
+            </div>
+
+            <!-- PILIH SERVER / KUALITAS VIDEO ✅ DIPERBAIKI BIAR TEKS BERUBAH -->
+            <div class="mb-3">
+                <label class="form-label mb-2">Pilih Server:</label>
+                <div class="dropdown">
+                    <button class="dropdown-custom" type="button" data-bs-toggle="dropdown" id="serverButton">
+                        <!-- ✅ Teks akan berubah sesuai pilihan -->
+                        <span id="serverText">{% if anime.episode_servers %}{{ anime.episode_servers[0].episodes[0].quality }} - {{ anime.episode_servers[0].server }}{% else %}Default{% endif %}</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <ul class="dropdown-menu w-100">
+                        {% for server in anime.episode_servers %}
+                            {% for episode in server.episodes %}
+                            <li>
+                                <a class="dropdown-item" href="#" 
+                                   onclick="changeVideo('{{ episode.url }}', '{{ episode.quality }} - {{ server.server }}')">
+                                    {{ episode.quality }} - {{ server.server }}
+                                </a>
+                            </li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- NAVIGASI EPISODE -->
+            {% if prev_episode or next_episode %}
+            <div class="d-flex gap-3 mb-3">
+                {% if prev_episode %}
+                <a href="/anime/{{ prev_episode.url.replace('https://ww1.anoboy.boo/', '') }}" class="btn-red flex-grow-1 text-center text-decoration-none">
+                    Ep Sebelumnya
+                </a>
                 {% else %}
-                    <div class="text-center py-4">
-                        <i class="fas fa-exclamation-triangle fa-2x text-muted mb-2"></i>
-                        <h6 class="text-muted">Stream Tidak Tersedia</h6>
-                        <p class="text-muted small mb-0">Gunakan link download di bawah</p>
-                    </div>
+                <button class="btn-red flex-grow-1" disabled>Ep Sebelumnya</button>
+                {% endif %}
+                {% if next_episode %}
+                <a href="/anime/{{ next_episode.url.replace('https://ww1.anoboy.boo/', '') }}" class="btn-dark flex-grow-1 text-center text-decoration-none">
+                    Ep Selanjutnya
+                </a>
+                {% else %}
+                <button class="btn-dark flex-grow-1" disabled>Ep Selanjutnya</button>
                 {% endif %}
             </div>
+            {% endif %}
         </div>
+        {% endif %}
 
-        <!-- DOWNLOAD SECTIONS -->
-        {% if anime.batch_downloads %}
-        <div class="download-section">
-            <div class="batch-section">
-                <h5 class="mb-0"><i class="fas fa-archive me-2"></i>Batch Download</h5>
-                <small>Download seluruh episode sekaligus</small>
-            </div>
+        <!-- ✅ BAGIAN DOWNLOAD: TULISAN UBAH JADI "DOWNLOAD" -->
+        {% if anime.download_links or anime.batch_downloads %}
+        <div class="detail-card">
+            <h5 class="mb-3 fw-semibold"><i class="fas fa-download text-primary me-2"></i>Download</h5>
+
+            {% if anime.batch_downloads %}
+            <h6 class="text-muted small mb-2">Batch Download</h6>
             {% for provider in anime.batch_downloads %}
-            <div class="download-dropdown">
+            <div class="download-item">
+                <div>
+                    <div>{{ provider.provider }}</div>
+                </div>
                 <div class="dropdown">
-                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fas fa-download me-2"></i>
-                        {{ provider.provider }}
-                        <span class="badge bg-primary ms-2">{{ provider.links|length }} Quality</span>
+                    <button class="btn-red dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        Download
                     </button>
-                    <ul class="dropdown-menu">
+                    <ul class="dropdown-menu dropdown-menu-end">
                         {% for link in provider.links %}
-                        <li>
-                            <a class="dropdown-item" href="{{ link.url }}" target="_blank">
-                                <div class="download-option">
-                                    <span class="download-quality">{{ link.quality }}</span>
-                                    <span class="download-provider">{{ provider.provider }}</span>
-                                </div>
-                            </a>
-                        </li>
+                        <li><a class="dropdown-item" href="{{ link.url }}" target="_blank">{{ link.quality }}</a></li>
                         {% endfor %}
                     </ul>
                 </div>
             </div>
             {% endfor %}
-        </div>
-        {% endif %}
-        
-        {% if anime.download_links %}
-        <div class="download-section">
-            <h5 class="mb-3"><i class="fas fa-download me-2"></i>Download Episode</h5>
+            {% endif %}
+
+            {% if anime.download_links %}
+            <!-- <h6 class="text-muted small mb-2 mt-3">Per Episode</h6> -->
             {% for provider in anime.download_links %}
-            <div class="download-dropdown">
+            <div class="download-item">
+                <div>
+                    <div>{{ provider.provider }}</div>
+                </div>
                 <div class="dropdown">
-                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fas fa-download me-2"></i>
-                        {{ provider.provider }}
-                        <span class="badge bg-primary ms-2">{{ provider.links|length }} Quality</span>
+                    <button class="btn-red dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        Download
                     </button>
-                    <ul class="dropdown-menu">
+                    <ul class="dropdown-menu dropdown-menu-end">
                         {% for link in provider.links %}
-                        <li>
-                            <a class="dropdown-item" href="{{ link.url }}" target="_blank">
-                                <div class="download-option">
-                                    <span class="download-quality">{{ link.quality }}</span>
-                                    <span class="download-provider">{{ provider.provider }}</span>
-                                </div>
-                            </a>
-                        </li>
+                        <li><a class="dropdown-item" href="{{ link.url }}" target="_blank">{{ link.quality }}</a></li>
                         {% endfor %}
                     </ul>
                 </div>
             </div>
             {% endfor %}
+            {% endif %}
         </div>
         {% endif %}
-        
-        <!-- SEASON SECTIONS -->
+
+        <!-- DAFTAR EPISODE / SEASON -->
         {% if anime.seasons %}
-        <div class="download-section">
-            <h5 class="mb-3"><i class="fas fa-layer-group me-2"></i>Season & Episode</h5>
+        <div class="detail-card">
+            <h5 class="mb-3 fw-semibold"><i class="fas fa-layer-group text-primary me-2"></i>Daftar Episode</h5>
             {% for season in anime.seasons %}
-            <div class="season-section">
-                <div class="season-header">
-                    {{ season.name }}
-                </div>
-                <div class="episode-list">
+            <div class="mb-3">
+                <h6 class="text-muted mb-2">{{ season.name }}</h6>
+                <div class="d-flex flex-wrap gap-2">
                     {% for episode in season.episodes %}
-                    <div class="episode-item">
-                        <a href="/anime/{{ episode.url.replace('https://ww1.anoboy.boo/', '') }}" class="episode-link">
-                            <i class="fas fa-play-circle me-2 text-primary"></i>{{ episode.title }}
-                        </a>
-                    </div>
+                    <a href="/anime/{{ episode.url.replace('https://ww1.anoboy.boo/', '') }}" class="btn-dark text-decoration-none small">
+                        <i class="fas fa-play-circle me-1 text-success"></i> {{ episode.title }}
+                    </a>
                     {% endfor %}
                 </div>
             </div>
             {% endfor %}
         </div>
         {% endif %}
+        
     </div>
 </div>
+
 {% else %}
-<div class="alert alert-danger text-center py-3">
+<div class="alert alert-danger text-center py-4 rounded-3 shadow-sm">
     <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
     <h5>Anime Tidak Ditemukan</h5>
-    <p class="mb-0 small">Terjadi error saat memuat data anime</p>
+    <p class="mb-0 small">Terjadi kesalahan saat memuat data</p>
 </div>
 {% endif %}
+
+{% block scripts %}
+<script>
+// ✅ FUNGSI DIPERBAIKI: GANTI VIDEO + GANTI TULISAN DI TOMBOL
+function changeVideo(url, title) {
+    document.getElementById('videoPlayer').src = url;
+    // Ini yang ngerubah tulisan pas kamu pilih
+    document.getElementById('serverText').textContent = title;
+}
+</script>
+{% endblock %}
+
 {% endblock %}
