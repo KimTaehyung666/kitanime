@@ -229,6 +229,59 @@ class AnimeScraper:
         except Exception:
             return []
 
+    def get_category_list(self, category_slug, page=1):
+        """Get anime list by category slug (genre, live-action, tokusatsu, dll)"""
+        try:
+            # Ongoing punya URL khusus
+            if category_slug == 'ongoing':
+                if page == 1:
+                    url = f"{BASE_URL}anime/ongoing/"
+                else:
+                    url = f"{BASE_URL}anime/ongoing/page/{page}/"
+            else:
+                if page == 1:
+                    url = f"{BASE_URL}category/{category_slug}/"
+                else:
+                    url = f"{BASE_URL}category/{category_slug}/page/{page}/"
+
+            r = requests.get(url, headers=HEADERS)
+            soup = BeautifulSoup(r.text, "html.parser")
+
+            result = []
+
+            # Coba dari column-content dulu
+            container = soup.find('div', class_='column-content') or soup.find('div', class_='home_index')
+
+            links = []
+            if container:
+                links = container.find_all('a', href=re.compile(r'/(20[12][0-9]|anime)/'))
+            if not links:
+                links = soup.find_all('a', href=re.compile(r'/(20[12][0-9])/'))
+
+            for link in links:
+                amv_div = link.find('div', class_='amv')
+                if not amv_div:
+                    amv_div = link.find('div', id='amv')
+                if amv_div:
+                    title_div = amv_div.find('h3', class_='ibox1') or amv_div.find('h3', class_='ibox')
+                    jam_div = amv_div.find('div', class_='jamup')
+                    img = amv_div.find('img')
+
+                    if title_div and link.get('href'):
+                        cover_url = self.resolve_url(img['src']) if img and img.get('src') else ""
+                        item = {
+                            "title": self.clean_title(title_div.text.strip()),
+                            "jam": jam_div.text.strip() if jam_div else "",
+                            "link": link['href'],
+                            "cover": cover_url
+                        }
+                        if not any(a['link'] == item['link'] for a in result):
+                            result.append(item)
+
+            return result[:24]
+        except Exception:
+            return []
+
     def get_home_movies(self):
         """Get featured movies from homepage sidebar"""
         try:
@@ -621,6 +674,41 @@ class AnimeScraper:
         """Extract streaming servers dengan support multiple quality"""
         episode_servers = []
         
+        # METHOD 0: Tipe [Streaming] — iframe tontonin + allvideo episode list
+        tontonin = soup.find("iframe", id="tontonin")
+        allvideo_links = soup.find_all("a", id="allvideo")
+        
+        if tontonin or allvideo_links:
+            # Kumpulkan semua episode dari data-video
+            episodes = []
+            for link in allvideo_links:
+                if link.get("data-video"):
+                    ep_label = link.get_text(strip=True) or "Episode"
+                    video_url = self.resolve_url(link["data-video"])
+                    episodes.append({
+                        "title": ep_label,
+                        "url": video_url,
+                        "server": "Streaming",
+                        "quality": ep_label
+                    })
+            
+            # Kalau ada iframe tapi tidak ada episode list, pakai iframe langsung
+            if not episodes and tontonin and tontonin.get("src"):
+                episodes.append({
+                    "title": "Play",
+                    "url": self.resolve_url(tontonin["src"]),
+                    "server": "Streaming",
+                    "quality": "Default"
+                })
+            
+            if episodes:
+                episode_servers.append({
+                    "server": "Streaming",
+                    "episodes": episodes
+                })
+            detail["episode_servers"] = episode_servers
+            return
+
         # METHOD 1: Extract dari struktur mirror/vmiror
         mirror_divs = soup.find_all("div", class_=["vmiror", "miror"])
         
@@ -918,6 +1006,72 @@ def anime_detail_legacy():
         clean_path = parsed_url.path.lstrip('/')
         return redirect(url_for('anime_detail_clean', anime_path=clean_path))
     return "URL anime tidak ditemukan", 404
+
+GENRE_LIST = [
+    ("ongoing",        "Ongoing"),
+    ("action",         "Action"),
+    ("adventure",      "Adventure"),
+    ("comedy",         "Comedy"),
+    ("demons",         "Demons"),
+    ("drama",          "Drama"),
+    ("ecchi",          "Ecchi"),
+    ("fantasy",        "Fantasy"),
+    ("game",           "Game"),
+    ("harem",          "Harem"),
+    ("historical",     "Historical"),
+    ("horror",         "Horror"),
+    ("magic",          "Magic"),
+    ("martial-arts",   "Martial Arts"),
+    ("mecha",          "Mecha"),
+    ("military",       "Military"),
+    ("music",          "Music"),
+    ("mystery",        "Mystery"),
+    ("parody",         "Parody"),
+    ("police",         "Police"),
+    ("psychological",  "Psychological"),
+    ("romance",        "Romance"),
+    ("samurai",        "Samurai"),
+    ("school",         "School"),
+    ("shoujo",         "Shoujo"),
+    ("shounen",        "Shounen"),
+    ("super-power",    "Super Power"),
+    ("slice-of-life",  "Slice of Life"),
+    ("sci-Fi",         "Sci-Fi"),
+    ("seinen",         "Seinen"),
+    ("space",          "Space"),
+    ("sports",         "Sports"),
+    ("Supernatural",   "Supernatural"),
+    ("thriller",       "Thriller"),
+    ("tokusatsu",      "Tokusatsu"),
+    ("vampire",        "Vampire"),
+    ("donghua",        "Donghua"),
+    ("live-action-movie", "Live Action"),
+    ("rekomended",     "Rekomendasi"),
+]
+
+@app.route('/genre/<slug>')
+def genre_page(slug):
+    page = request.args.get('page', 1, type=int)
+    # Cari label dari GENRE_LIST
+    label = next((name for s, name in GENRE_LIST if s == slug), slug.replace('-', ' ').title())
+    items = scraper.get_category_list(slug, page)
+    return render_template('genre.html',
+                           items=items,
+                           slug=slug,
+                           label=label,
+                           current_page=page,
+                           genre_list=GENRE_LIST)
+
+@app.route('/live-action')
+def live_action():
+    page = request.args.get('page', 1, type=int)
+    items = scraper.get_category_list('live-action-movie', page)
+    return render_template('genre.html',
+                           items=items,
+                           slug='live-action-movie',
+                           label='Live Action',
+                           current_page=page,
+                           genre_list=GENRE_LIST)
 
 if __name__ == '__main__':  
     app.run(debug=True, host='0.0.0.0', port=5000)

@@ -3,378 +3,547 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}KitaNime - Nonton Anime Sub Indo{% endblock %}</title>
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>{% block title %}KitaNime — Nonton Anime Sub Indo{% endblock %}</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        :root {
-            --bg-main: #121217;
-            --bg-card: #1e1e28;
-            --bg-input: #272733;
-            --color-primary: #e52e38;
-            --text-white: #ffffff;
-            --text-muted: #a1a1b3;
-            --border-radius: 12px;
-        }
+    :root {
+        --bg:    #0c0d11;
+        --bg2:   #13141a;
+        --bg3:   #1c1e27;
+        --bg4:   #252832;
+        --red:   #e5192c;
+        --red2:  #ff3347;
+        --rdim:  rgba(229,25,44,.13);
+        --txt:   #e8e8f0;
+        --sub:   #7878a0;
+        --muted: #44455a;
+        --bdr:   rgba(255,255,255,.055);
+        --r:     10px;
+    }
+    body.light {
+        --bg:    #f0f1f6;
+        --bg2:   #ffffff;
+        --bg3:   #e8eaf2;
+        --bg4:   #dddfe8;
+        --txt:   #0c0d18;
+        --sub:   #50507a;
+        --muted: #9090b8;
+        --bdr:   rgba(0,0,0,.1);
+    }
+    body.light .topbar{background:rgba(240,241,246,.96);}
+    body.light .acard{box-shadow:0 2px 8px rgba(0,0,0,.08);}
+    body.light .blk{box-shadow:0 1px 4px rgba(0,0,0,.06);}
+    body.light .acard-title{color:#0c0d18;}
+    body.light .brand em{color:var(--red);}
+    body.light footer{color:var(--sub);}
 
-        body {
-            background-color: var(--bg-main) !important;
-            color: var(--text-white) !important;
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            transition: background 0.3s, color 0.3s;
-        }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{
+        background:var(--bg);color:var(--txt);
+        font-family:'DM Sans',sans-serif;font-size:15px;
+        min-height:100vh;line-height:1.5;
+        transition:background .25s,color .25s;
+    }
 
-        /* ==== LIGHT MODE ==== */
-        body.light-mode {
-            --bg-main: #f5f5f7;
-            --bg-card: #ffffff;
-            --bg-input: #eaeaea;
-            --text-white: #1a1a1f;
-            --text-muted: #6e6e80;
-        }
+    /* ═══ NOISE OVERLAY ═══ */
+    body::before{
+        content:'';position:fixed;inset:0;
+        background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+        opacity:.4;pointer-events:none;z-index:0;
+    }
 
-        /* ==== NAVBAR ==== */
-        .navbar {
-            background-color: var(--bg-main) !important;
-            padding: 0.8rem 0;
-            box-shadow: none;
-        }
-        .navbar .container {
-            display: flex !important;
-            justify-content: space-between !important;
-            align-items: center !important;
-        }
+    /* ═══ TOPBAR ═══ */
+    .topbar{
+        background:rgba(13,14,18,.92);
+        backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+        border-bottom:1px solid var(--bdr);
+        position:sticky;top:0;z-index:300;padding:10px 0;
+    }
+    body.light .topbar{background:rgba(240,241,246,.94);}
+    .topbar-inner{
+        max-width:1060px;margin:0 auto;padding:0 14px;
+        display:flex;align-items:center;gap:10px;
+    }
+    .brand{
+        font-family:'Sora',sans-serif;font-weight:800;
+        font-size:1.18rem;letter-spacing:-.5px;
+        color:var(--txt);text-decoration:none;flex-shrink:0;
+    }
+    .brand em{color:var(--red);font-style:normal;}
 
-        /* KIRI: LOGO */
-        .navbar-brand {
-            color: var(--color-primary) !important;
-            font-weight: bold;
-            font-size: 1.4rem;
-            margin: 0;
-        }
+    .sform{flex:1;max-width:340px;position:relative;}
+    .sform i{
+        position:absolute;left:11px;top:50%;
+        transform:translateY(-50%);
+        color:var(--sub);font-size:.78rem;pointer-events:none;
+    }
+    .sinp{
+        width:100%;background:var(--bg3);border:1px solid var(--bdr);
+        color:var(--txt);border-radius:8px;
+        padding:8px 12px 8px 30px;
+        font:500 .85rem 'DM Sans',sans-serif;
+        outline:none;transition:border .2s,background .2s;
+    }
+    .sinp:focus{border-color:var(--red);background:var(--bg4);}
+    .sinp::placeholder{color:var(--sub);}
 
-        /* TENGAH: KOTAK PENCARIAN */
-        .search-wrapper {
-            flex: 0 1 180px;
-        }
-        .search-input-custom {
-            background-color: var(--bg-input);
-            border: none;
-            color: var(--text-white);
-            border-radius: 20px;
-            width: 100% !important;
-            font-size: 0.85rem;
-            padding: 0.4rem 1rem;
-            text-align: center;
-            outline: none;
-        }
-        .search-input-custom::placeholder { 
-            color: var(--text-muted); 
-            font-size: 0.85rem;
-        }
-        .search-input-custom:focus {
-            background-color: var(--bg-input);
-            color: var(--text-white);
-            box-shadow: 0 0 0 1px var(--color-primary);
-        }
+    .tbtns{display:flex;gap:6px;flex-shrink:0;}
+    .tbtn{
+        background:var(--bg3);border:1px solid var(--bdr);
+        color:var(--sub);width:36px;height:36px;
+        border-radius:8px;display:flex;align-items:center;
+        justify-content:center;font-size:.82rem;
+        cursor:pointer;transition:all .2s;text-decoration:none;
+    }
+    .tbtn:hover{border-color:var(--red);color:var(--red);background:var(--rdim);}
+    .dropdown-menu{
+        background:var(--bg3);border:1px solid var(--bdr);
+        border-radius:var(--r);padding:4px;min-width:150px;
+        box-shadow:0 12px 40px rgba(0,0,0,.5);
+        max-height:70vh;overflow-y:auto;
+        scrollbar-width:thin;scrollbar-color:var(--muted) transparent;
+    }
+    .dropdown-item{
+        color:var(--txt);border-radius:6px;
+        padding:8px 12px;font-size:.85rem;
+        font-family:'DM Sans',sans-serif;font-weight:500;
+    }
+    .dropdown-item:hover{background:var(--bg4);color:var(--red);}
+    .dropdown-divider{border-color:var(--bdr);margin:3px 8px;}
 
-        /* KANAN: TOMBOL TEMA + MENU DROPDOWN ✅ WARNA MERAH */
-        .nav-actions {
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-        }
-        .btn-theme {
-            background-color: transparent;
-            color: var(--color-primary) !important; /* ✅ WARNA MERAH */
-            border: none;
-            width: 34px;
-            height: 34px;
-            font-size: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0;
-        }
-        .btn-theme:hover {
-            color: #c4242d !important;
-        }
+    /* ═══ WRAP ═══ */
+    .pwrap{
+        max-width:1060px;margin:0 auto;
+        padding:18px 14px 52px;
+        position:relative;z-index:1;
+    }
 
-        .menu-dropdown .nav-link {
-            color: var(--color-primary) !important; /* ✅ WARNA MERAH */
-            font-size: 1.2rem;
-            border: 1px solid var(--color-primary); /* ✅ GARIS JUGA MERAH */
-            padding: 0.4rem 0.6rem;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .menu-dropdown .nav-link:hover {
-            color: #c4242d !important;
-            border-color: #c4242d !important;
-        }
-        .dropdown-menu {
-            background-color: var(--bg-card);
-            border: none;
-            border-radius: var(--border-radius);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            padding: 0.5rem;
-            margin-top: 0.5rem;
-        }
-        .dropdown-item {
-            color: var(--text-white);
-            border-radius: 8px;
-            padding: 0.5rem 1rem;
-        }
-        .dropdown-item:hover {
-            background-color: var(--bg-input);
-            color: var(--color-primary);
-        }
+    /* ═══ SECTION HEADER ═══ */
+    .shd{
+        display:flex;align-items:center;
+        justify-content:space-between;
+        margin-bottom:12px;
+    }
+    .shd h2{
+        font-family:'Sora',sans-serif;
+        font-size:.95rem;font-weight:700;
+        letter-spacing:-.2px;
+        display:flex;align-items:center;gap:8px;
+    }
+    .shd h2 span{color:var(--red);}
+    .shd h2::before{
+        content:'';display:block;
+        width:3px;height:16px;
+        background:var(--red);border-radius:2px;
+    }
+    .btn-more{
+        background:transparent;border:1px solid var(--bdr);
+        color:var(--sub);border-radius:7px;
+        padding:5px 12px;font:.75rem 'Sora',sans-serif;
+        font-weight:600;
+        text-decoration:none;display:inline-flex;
+        align-items:center;gap:5px;transition:all .2s;
+    }
+    .btn-more:hover{border-color:var(--red);color:var(--red);background:var(--rdim);}
 
-        /* ==== CARD GRID ==== */
-        .card-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr) !important;
-            gap: 12px !important;
-            margin: 0 !important;
-        }
-        @media (min-width: 768px) {
-            .card-grid { grid-template-columns: repeat(6, 1fr) !important; }
-        }
+    /* ═══ CARD GRID ═══ */
+    .cgrid{
+        display:grid;
+        grid-template-columns:repeat(3,1fr);
+        gap:9px;
+    }
+    @media(min-width:480px){.cgrid{grid-template-columns:repeat(4,1fr);}}
+    @media(min-width:640px){.cgrid{grid-template-columns:repeat(5,1fr);}}
+    @media(min-width:900px){.cgrid{grid-template-columns:repeat(6,1fr);}}
 
-        .anime-card-link { text-decoration: none; }
-        .anime-card {
-            background-color: var(--bg-card) !important;
-            border-radius: var(--border-radius) !important;
-            overflow: hidden;
-            height: 100%;
-            border: none !important;
-            display: flex;
-            flex-direction: column;
-        }
-        .anime-card:hover { transform: translateY(-2px); }
+    .acard{
+        display:block;text-decoration:none;
+        border-radius:var(--r);overflow:hidden;
+        background:var(--bg2);
+        border:1px solid var(--bdr);
+        aspect-ratio:2/3;position:relative;
+        transition:transform .22s cubic-bezier(.34,1.56,.64,1),
+                    box-shadow .22s,border-color .22s;
+    }
+    .acard:hover{
+        transform:translateY(-4px) scale(1.02);
+        box-shadow:0 12px 32px rgba(0,0,0,.55),
+                   0 0 0 1px rgba(229,25,44,.2);
+        border-color:rgba(229,25,44,.3);
+    }
+    .acard img{
+        width:100%;height:68%;
+        object-fit:cover;object-position:center top;
+        display:block;transition:transform .35s ease;
+    }
+    .acard:hover img{transform:scale(1.04);}
+    .acard-body{
+        padding:7px 8px;height:32%;
+        display:flex;flex-direction:column;
+        justify-content:space-between;
+        background:var(--bg2);
+    }
+    .acard-title{
+        font-size:.7rem;font-weight:600;
+        color:var(--txt);line-height:1.3;
+        overflow:hidden;display:-webkit-box;
+        -webkit-line-clamp:2;-webkit-box-orient:vertical;
+    }
+    .acard-time{
+        font-size:.61rem;color:var(--sub);
+        white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+        margin-top:3px;
+    }
+    .abadge{
+        position:absolute;top:6px;left:6px;
+        font-size:.58rem;font-weight:700;
+        padding:2px 6px;border-radius:4px;
+        letter-spacing:.4px;text-transform:uppercase;
+    }
+    .badge-new{background:var(--red);color:#fff;}
+    .badge-movie{
+        background:rgba(0,0,0,.7);color:#ffd700;
+        border:1px solid rgba(255,215,0,.35);
+    }
+    .badge-end{background:#1a8c4e;color:#fff;}
 
-        .cover-img {
-            width: 100%;
-            height: 160px !important;
-            object-fit: cover;
-        }
+    /* ═══ PAGINATION ═══ */
+    .pag{
+        display:flex;justify-content:center;
+        gap:4px;margin:14px 0 4px;
+    }
+    .pag a,.pag span{
+        background:var(--bg2);border:1px solid var(--bdr);
+        color:var(--txt);border-radius:6px;
+        padding:4px 10px;font-size:.73rem;font-weight:600;
+        text-decoration:none;transition:all .2s;
+        display:inline-flex;align-items:center;gap:3px;
+        font-family:'Sora',sans-serif;
+    }
+    .pag a:hover{border-color:var(--red);color:var(--red);}
+    .pag span{background:var(--red);border-color:var(--red);color:#fff;}
+    .pag .dis{opacity:.3;pointer-events:none;}
 
-        .card-body { 
-            padding: 10px !important; 
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
+    /* ═══ PAGE HERO ═══ */
+    .phero{padding:18px 0 6px;}
+    .phero h1{
+        font-family:'Sora',sans-serif;
+        font-size:1.3rem;font-weight:800;letter-spacing:-.4px;
+    }
+    .phero p{color:var(--sub);font-size:.83rem;margin-top:3px;}
 
-        /* ✅ TEKS JUDUL: DIPOTONG 2 BARIS, RAPIH */
-        .anime-title {
-            color: var(--text-white);
-            font-size: 0.8rem !important;
-            font-weight: 600;
-            line-height: 1.35;
-            margin-bottom: 8px !important;
-            overflow: hidden;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            text-overflow: ellipsis;
-            min-height: 2.1rem;
-        }
+    /* ═══ DETAIL PAGE ═══ */
+    /* Banner */
+    .dbanner{
+        position:relative;border-radius:var(--r);
+        overflow:hidden;margin-bottom:14px;
+        aspect-ratio:16/9;background:var(--bg2);
+    }
+    .dbanner img{
+        width:100%;height:100%;
+        object-fit:cover;object-position:center top;
+        display:block;filter:brightness(.45);
+    }
+    .dbanner-info{
+        position:absolute;bottom:0;left:0;right:0;
+        padding:16px 14px 12px;
+        background:linear-gradient(transparent,rgba(0,0,0,.92));
+    }
+    .dbanner-title{
+        font-family:'Sora',sans-serif;
+        font-size:1rem;font-weight:800;
+        line-height:1.25;color:#fff;
+        display:-webkit-box;
+        -webkit-line-clamp:3;
+        -webkit-box-orient:vertical;
+        overflow:hidden;
+    }
+    @media(min-width:768px){.dbanner{display:none;}}
 
-        /* ✅ TEKS UPDATE: RAPIH, RATA, TANPA TITIK KUNING */
-        .episode-time {
-            color: var(--text-muted);
-            font-size: 0.7rem !important;
-            line-height: 1.3;
-        }
+    /* Layout */
+    .dwrap{display:grid;grid-template-columns:1fr;gap:12px;}
+    @media(min-width:768px){.dwrap{grid-template-columns:190px 1fr;}}
 
-        /* ==== TEKS & LAINNYA ==== */
-        .section-title {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: var(--text-white);
-            margin-bottom: 0.5rem;
-        }
-        .text-muted {
-            color: var(--text-muted) !important;
-            font-size: 0.9rem;
-        }
+    .dside{display:none;}
+    @media(min-width:768px){.dside{display:block;}}
+    .dposter{
+        width:100%;border-radius:var(--r);
+        border:1px solid var(--bdr);display:block;margin-bottom:10px;
+    }
+    .dside-title{
+        font-family:'Sora',sans-serif;
+        font-size:.92rem;font-weight:800;
+        line-height:1.25;margin-bottom:10px;
+    }
 
-        /* ✅ PAGINATION DIPERBAGUS */
-        .pagination {
-            gap: 8px;
-        }
-        .pagination .page-link {
-            background-color: var(--bg-card);
-            color: var(--text-white);
-            border: none;
-            border-radius: 8px;
-            margin: 0;
-            padding: 0.6rem 1.2rem;
-            font-size: 0.95rem;
-            min-width: 40px;
-            text-align: center;
-            transition: all 0.2s ease;
-        }
-        .pagination .page-link:hover {
-            background-color: var(--color-primary);
-            color: white;
-            transform: translateY(-1px);
-        }
-        .pagination .page-item.active .page-link { 
-            background-color: var(--color-primary); 
-            box-shadow: 0 2px 8px rgba(229, 46, 56, 0.3);
-        }
-        .pagination .page-item.disabled .page-link {
-            background-color: var(--bg-input);
-            color: var(--text-muted);
-            opacity: 0.6;
-        }
+    /* Block */
+    .blk{
+        background:var(--bg2);border:1px solid var(--bdr);
+        border-radius:var(--r);padding:14px;margin-bottom:10px;
+    }
+    .blk-ttl{
+        font-family:'Sora',sans-serif;
+        font-size:.75rem;font-weight:700;
+        color:var(--sub);letter-spacing:.3px;
+        margin-bottom:10px;padding-bottom:8px;
+        border-bottom:1px solid var(--bdr);
+        display:flex;align-items:center;gap:6px;
+    }
+    .blk-ttl i{color:var(--red);}
 
-        /* ✅ TOMBOL LIHAT SEMUA DIPERBAGUS */
-        .btn-red {
-            background-color: var(--color-primary) !important;
-            color: white !important;
-            border: none !important;
-            border-radius: var(--border-radius) !important;
-            font-size: 0.85rem;
-            padding: 0.5rem 1.2rem;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 6px rgba(229, 46, 56, 0.2);
-        }
-        .btn-red:hover { 
-            background-color: #c4242d !important; 
-            transform: translateY(-1px);
-            color: white !important;
-        }
-        .btn-dark {
-            background-color: var(--bg-input) !important;
-            color: var(--text-white) !important;
-            border: none !important;
-            border-radius: var(--border-radius) !important;
-            font-size: 0.85rem;
-            transition: all 0.2s ease;
-        }
-        .btn-dark:hover {
-            background-color: #323240 !important;
-            color: var(--color-primary) !important;
-        }
-        .detail-card {
-            background-color: var(--bg-card);
-            border-radius: var(--border-radius);
-            padding: 1rem;
-            margin-bottom: 1rem;
-        }
-        .sinopsis-text {
-            color: var(--text-white) !important;
-            line-height: 1.6;
-            text-align: justify;
-            font-size: 0.9rem;
-        }
-        .dropdown-custom {
-            width: 100%;
-            background-color: var(--bg-input);
-            color: var(--text-white);
-            border: none;
-            border-radius: 8px;
-            padding: 0.6rem 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .download-item {
-            background-color: var(--bg-input);
-            border-radius: 8px;
-            padding: 0.8rem 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.7rem;
-        }
+    /* Sinopsis */
+    .sin-wrap{position:relative;}
+    .sin-txt{
+        font-size:.875rem;line-height:1.65;
+        color:var(--txt);opacity:.85;
+        overflow:hidden;max-height:88px;
+        transition:max-height .3s ease;
+    }
+    .sin-txt.exp{max-height:1200px;}
+    .sin-fade{
+        position:absolute;bottom:0;left:0;right:0;height:40px;
+        background:linear-gradient(transparent,var(--bg2));
+        pointer-events:none;transition:opacity .3s;
+    }
+    .sin-fade.hid{opacity:0;}
+    .btn-exp{
+        background:none;border:none;color:var(--red);
+        font-size:.78rem;font-weight:700;
+        font-family:'Sora',sans-serif;
+        cursor:pointer;padding:6px 0 0;display:block;
+        letter-spacing:.2px;
+    }
+
+    /* Info table */
+    .irow{
+        display:flex;justify-content:space-between;
+        align-items:baseline;gap:10px;
+        padding:7px 0;border-bottom:1px solid var(--bdr);
+        font-size:.83rem;
+    }
+    .irow:last-child{border-bottom:none;padding-bottom:0;}
+    .ikey{color:var(--sub);flex-shrink:0;}
+    .ival{text-align:right;font-weight:600;}
+
+    /* Genre tags inline */
+    .gtags{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end;}
+    .gtag{
+        background:var(--rdim);border:1px solid rgba(229,25,44,.25);
+        color:var(--red);border-radius:20px;
+        padding:2px 9px;font-size:.68rem;font-weight:600;
+        text-decoration:none;transition:all .15s;
+    }
+    .gtag:hover{background:var(--red);color:#fff;}
+
+    /* Player */
+    .pblock{padding:8px;}
+    .pframe{
+        border-radius:8px;overflow:hidden;
+        background:#000;margin-bottom:10px;
+    }
+    .pframe iframe{
+        width:100%;aspect-ratio:16/9;
+        display:block;border:none;
+    }
+
+    /* Server select */
+    .srv-lbl{font-size:.72rem;color:var(--sub);font-weight:600;margin-bottom:6px;}
+    .srv-sel{
+        width:100%;background:var(--bg3);
+        border:1px solid var(--bdr);
+        color:var(--txt);border-radius:8px;
+        padding:8px 32px 8px 12px;
+        font:600 .83rem 'DM Sans',sans-serif;
+        outline:none;cursor:pointer;
+        margin-bottom:10px;transition:border .2s;
+        appearance:none;
+        background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237878a0' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat:no-repeat;
+        background-position:right 12px center;
+    }
+    .srv-sel:focus{border-color:var(--red);}
+    .srv-sel option{background:var(--bg3);}
+
+    /* Ep nav */
+    .epnav{display:flex;gap:8px;}
+    .epbtn{
+        display:inline-flex;align-items:center;
+        justify-content:center;gap:5px;
+        border-radius:8px;padding:8px 14px;
+        font-size:.78rem;font-weight:700;
+        font-family:'Sora',sans-serif;
+        text-decoration:none;transition:all .2s;
+        border:1px solid var(--bdr);white-space:nowrap;
+    }
+    .epbtn.prev{background:var(--rdim);border-color:var(--red);color:var(--red);}
+    .epbtn.prev:hover{background:var(--red);color:#fff;}
+    .epbtn.next{background:var(--bg3);color:var(--txt);flex:1;justify-content:flex-end;}
+    .epbtn.next:hover{border-color:var(--sub);}
+    .epbtn[disabled]{opacity:.3;pointer-events:none;}
+
+    /* Download */
+    .dlrow{
+        display:flex;justify-content:space-between;
+        align-items:center;padding:9px 0;
+        border-bottom:1px solid var(--bdr);gap:10px;
+    }
+    .dlrow:last-child{border-bottom:none;padding-bottom:0;}
+    .dlname{font-size:.88rem;font-weight:700;}
+    .dlbtn{
+        background:var(--red);color:#fff;border:none;
+        border-radius:7px;padding:6px 13px;
+        font:700 .75rem 'Sora',sans-serif;
+        cursor:pointer;display:flex;align-items:center;
+        gap:5px;transition:all .2s;white-space:nowrap;
+    }
+    .dlbtn:hover{background:var(--red2);transform:translateY(-1px);}
+    .dl-menu{
+        background:var(--bg3);border:1px solid var(--bdr);
+        border-radius:8px;padding:4px;
+        box-shadow:0 8px 24px rgba(0,0,0,.5);min-width:120px;
+    }
+    .dl-item{
+        color:var(--txt);border-radius:5px;
+        padding:7px 12px;font-size:.8rem;
+        font-family:'DM Sans',sans-serif;
+        display:block;text-decoration:none;transition:all .15s;
+    }
+    .dl-item:hover{background:var(--rdim);color:var(--red);}
+
+    /* Episode chips */
+    .eplist{display:flex;flex-wrap:wrap;gap:6px;}
+    .epchip{
+        background:var(--bg3);border:1px solid var(--bdr);
+        color:var(--txt);border-radius:6px;
+        padding:5px 10px;font-size:.74rem;font-weight:500;
+        text-decoration:none;transition:all .15s;
+    }
+    .epchip:hover{border-color:var(--red);color:var(--red);background:var(--rdim);}
+
+    /* Score badge */
+    .score-badge{
+        display:inline-flex;align-items:center;gap:4px;
+        background:rgba(255,200,0,.12);border:1px solid rgba(255,200,0,.25);
+        color:#ffc800;border-radius:5px;
+        padding:2px 8px;font-size:.75rem;font-weight:700;
+    }
+
+    /* Empty */
+    .empty{
+        text-align:center;padding:52px 20px;color:var(--sub);
+    }
+    .empty i{font-size:2rem;opacity:.3;display:block;margin-bottom:10px;}
+
+    /* Animate in */
+    @keyframes fadeUp{
+        from{opacity:0;transform:translateY(10px);}
+        to{opacity:1;transform:translateY(0);}
+    }
+    .cgrid{animation:fadeUp .35s ease both;}
+
+    /* Footer */
+    footer{
+        border-top:1px solid var(--bdr);
+        text-align:center;padding:20px 14px;
+        color:var(--sub);font-size:.78rem;
+        position:relative;z-index:1;
+    }
+    footer b{color:var(--red);}
     </style>
-    
     {% block extra_css %}{% endblock %}
 </head>
 <body>
 
-<!-- ============= NAVBAR ============= -->
-<nav class="navbar navbar-expand-lg navbar-dark">
-    <div class="container">
-        <!-- KIRI: LOGO -->
-        <a class="navbar-brand" href="/">KITANIME</a>
-
-        <!-- TENGAH: PENCARIAN SUDAH SESUAI KODE KAMU -->
-        <div class="search-wrapper">
-            <form action="/search" method="get">
-                <input type="search" name="q" class="search-input-custom" 
-                       placeholder="Cari anime..." value="{{ request.args.get('q', '') }}"autocomplete="off">
-            </form>
-        </div>
-
-        <!-- KANAN: TOMBOL TEMA + MENU DROPDOWN MOVIES -->
-        <div class="nav-actions">
-            <button class="btn-theme" id="darkModeToggle">
-                <i class="fas fa-moon" id="iconDark"></i>
-                <i class="fas fa-sun" id="iconLight" style="display: none;"></i>
+<nav class="topbar">
+    <div class="topbar-inner">
+        <a class="brand" href="/"><em>Kita</em>Nime</a>
+        <form class="sform" action="/search" method="get">
+            <i class="fas fa-search"></i>
+            <input class="sinp" type="search" name="q"
+                   placeholder="Cari anime..."
+                   value="{{ request.args.get('q','') }}" autocomplete="off">
+        </form>
+        <div class="tbtns">
+            <button class="tbtn" id="themeBtn" title="Ganti tema">
+                <i class="fas fa-moon" id="iMoon"></i>
+                <i class="fas fa-sun"  id="iSun" style="display:none"></i>
             </button>
-
-            <div class="nav-item dropdown menu-dropdown">
-                <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="fas fa-bars"></i>
-                </a>
+            <div class="dropdown">
+                <button class="tbtn" data-bs-toggle="dropdown"><i class="fas fa-bars"></i></button>
                 <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" href="/movies">Movies</a></li>
+                    <li><a class="dropdown-item" href="/movies"><i class="fas fa-film me-2"></i>Movies</a></li>
+                    <li><a class="dropdown-item" href="/genre/live-action-movie"><i class="fas fa-clapperboard me-2"></i>Live Action</a></li>
+                    <li><a class="dropdown-item" href="/genre/tokusatsu"><i class="fas fa-mask me-2"></i>Tokusatsu</a></li>
+                    <li><a class="dropdown-item" href="/genre/donghua"><i class="fas fa-dragon me-2"></i>Donghua</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="/genre/ongoing"><i class="fas fa-circle-play me-2"></i>Ongoing</a></li>
+                    <li><a class="dropdown-item" href="/genre/action"><i class="fas fa-fire me-2"></i>Action</a></li>
+                    <li><a class="dropdown-item" href="/genre/adventure"><i class="fas fa-compass me-2"></i>Adventure</a></li>
+                    <li><a class="dropdown-item" href="/genre/comedy"><i class="fas fa-face-laugh me-2"></i>Comedy</a></li>
+                    <li><a class="dropdown-item" href="/genre/demons"><i class="fas fa-ghost me-2"></i>Demons</a></li>
+                    <li><a class="dropdown-item" href="/genre/drama"><i class="fas fa-masks-theater me-2"></i>Drama</a></li>
+                    <li><a class="dropdown-item" href="/genre/ecchi"><i class="fas fa-heart me-2"></i>Ecchi</a></li>
+                    <li><a class="dropdown-item" href="/genre/fantasy"><i class="fas fa-hat-wizard me-2"></i>Fantasy</a></li>
+                    <li><a class="dropdown-item" href="/genre/game"><i class="fas fa-gamepad me-2"></i>Game</a></li>
+                    <li><a class="dropdown-item" href="/genre/harem"><i class="fas fa-venus me-2"></i>Harem</a></li>
+                    <li><a class="dropdown-item" href="/genre/historical"><i class="fas fa-landmark me-2"></i>Historical</a></li>
+                    <li><a class="dropdown-item" href="/genre/horror"><i class="fas fa-skull me-2"></i>Horror</a></li>
+                    <li><a class="dropdown-item" href="/genre/magic"><i class="fas fa-wand-sparkles me-2"></i>Magic</a></li>
+                    <li><a class="dropdown-item" href="/genre/martial-arts"><i class="fas fa-hand-fist me-2"></i>Martial Arts</a></li>
+                    <li><a class="dropdown-item" href="/genre/mecha"><i class="fas fa-robot me-2"></i>Mecha</a></li>
+                    <li><a class="dropdown-item" href="/genre/military"><i class="fas fa-shield-halved me-2"></i>Military</a></li>
+                    <li><a class="dropdown-item" href="/genre/music"><i class="fas fa-music me-2"></i>Music</a></li>
+                    <li><a class="dropdown-item" href="/genre/mystery"><i class="fas fa-magnifying-glass me-2"></i>Mystery</a></li>
+                    <li><a class="dropdown-item" href="/genre/parody"><i class="fas fa-face-grin-tongue me-2"></i>Parody</a></li>
+                    <li><a class="dropdown-item" href="/genre/police"><i class="fas fa-shield me-2"></i>Police</a></li>
+                    <li><a class="dropdown-item" href="/genre/psychological"><i class="fas fa-brain me-2"></i>Psychological</a></li>
+                    <li><a class="dropdown-item" href="/genre/romance"><i class="fas fa-heart me-2"></i>Romance</a></li>
+                    <li><a class="dropdown-item" href="/genre/samurai"><i class="fas fa-torii-gate me-2"></i>Samurai</a></li>
+                    <li><a class="dropdown-item" href="/genre/school"><i class="fas fa-school me-2"></i>School</a></li>
+                    <li><a class="dropdown-item" href="/genre/sci-Fi"><i class="fas fa-flask me-2"></i>Sci-Fi</a></li>
+                    <li><a class="dropdown-item" href="/genre/seinen"><i class="fas fa-user me-2"></i>Seinen</a></li>
+                    <li><a class="dropdown-item" href="/genre/shoujo"><i class="fas fa-user-pen me-2"></i>Shoujo</a></li>
+                    <li><a class="dropdown-item" href="/genre/shounen"><i class="fas fa-bolt me-2"></i>Shounen</a></li>
+                    <li><a class="dropdown-item" href="/genre/slice-of-life"><i class="fas fa-leaf me-2"></i>Slice of Life</a></li>
+                    <li><a class="dropdown-item" href="/genre/space"><i class="fas fa-rocket me-2"></i>Space</a></li>
+                    <li><a class="dropdown-item" href="/genre/sports"><i class="fas fa-trophy me-2"></i>Sports</a></li>
+                    <li><a class="dropdown-item" href="/genre/super-power"><i class="fas fa-star me-2"></i>Super Power</a></li>
+                    <li><a class="dropdown-item" href="/genre/Supernatural"><i class="fas fa-eye me-2"></i>Supernatural</a></li>
+                    <li><a class="dropdown-item" href="/genre/thriller"><i class="fas fa-biohazard me-2"></i>Thriller</a></li>
+                    <li><a class="dropdown-item" href="/genre/vampire"><i class="fas fa-droplet me-2"></i>Vampire</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="/genre/rekomended"><i class="fas fa-thumbs-up me-2"></i>Rekomendasi</a></li>
                 </ul>
             </div>
         </div>
     </div>
 </nav>
 
-<div class="container">
+<div class="pwrap">
     {% block content %}{% endblock %}
 </div>
 
-<footer class="mt-5 py-4 text-center text-muted small">
-    <div class="container">
-        <p>&copy; 2025 KitaNime | Nonton Anime Subtitle Indonesia Tanpa Iklan Made With ♥️ by VaL</p>
-    </div>
+<footer>
+    &copy; 2025 <b>KitaNime</b> &middot; Nonton Anime Sub Indo Tanpa Iklan &middot; Made with ♥ by VaL
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // ==== FUNGSI DARK / LIGHT MODE ====
-    const toggleBtn = document.getElementById('darkModeToggle');
-    const body = document.body;
-    const iconDark = document.getElementById('iconDark');
-    const iconLight = document.getElementById('iconLight');
-
-    if(localStorage.getItem('theme') === 'light'){
-        body.classList.add('light-mode');
-        iconDark.style.display = 'none';
-        iconLight.style.display = 'block';
-    }
-
-    toggleBtn.addEventListener('click', function() {
-        body.classList.toggle('light-mode');
-        if(body.classList.contains('light-mode')){
-            localStorage.setItem('theme', 'light');
-            iconDark.style.display = 'none';
-            iconLight.style.display = 'block';
-        } else {
-            localStorage.setItem('theme', 'dark');
-            iconDark.style.display = 'block';
-            iconLight.style.display = 'none';
-        }
-    });
-
-    {% block extra_js %}{% endblock %}
+const themeBtn=document.getElementById('themeBtn');
+const iMoon=document.getElementById('iMoon');
+const iSun=document.getElementById('iSun');
+function setLight(on){
+    document.body.classList.toggle('light',on);
+    iMoon.style.display=on?'none':'';
+    iSun.style.display=on?'':'none';
+    localStorage.setItem('theme',on?'light':'dark');
+}
+if(localStorage.getItem('theme')==='light')setLight(true);
+themeBtn.addEventListener('click',()=>setLight(!document.body.classList.contains('light')));
+{% block extra_js %}{% endblock %}
 </script>
-
 </body>
 </html>

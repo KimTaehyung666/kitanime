@@ -1,59 +1,37 @@
 {% extends "base.html" %}
-
+{% block title %}Pencarian: {{ query }} — KitaNime{% endblock %}
 {% block content %}
-<div class="row mb-3">
-    <div class="col-12">
-        <h1 class="section-title">Hasil Pencarian</h1>
-        <p class="text-muted small">Kata kunci: <strong>"{{ query }}"</strong> • Ditemukan <strong>{{ results|length }}</strong> hasil</p>
+<div class="phero">
+    <h1>Hasil <span style="color:var(--red)">Pencarian</span></h1>
+    <p>"{{ query }}" &middot; {{ results|length }} hasil ditemukan</p>
+</div>
+<div class="cgrid">
+{% for anime in results %}
+<a href="/anime/{{ anime.link.replace('https://ww1.anoboy.boo/','') }}" class="acard">
+    <img src="{{ anime.cover }}" alt="{{ anime.title }}" loading="lazy"
+         onerror="this.src='https://via.placeholder.com/300x450/e5192c/fff?text=KN'">
+    <div class="acard-body">
+        <div class="acard-title">{{ anime.title }}</div>
+        <div class="acard-time">{{ anime.jam }}</div>
+    </div>
+</a>
+{% else %}
+<div style="grid-column:1/-1">
+    <div class="empty">
+        <i class="fas fa-search"></i>
+        <p>Tidak ada hasil untuk "{{ query }}"</p>
+        <a href="/" style="color:var(--red);font-size:.82rem;margin-top:8px;display:inline-block">← Beranda</a>
     </div>
 </div>
-
-<div class="card-grid">
-    {% for anime in results %}
-    <a href="/anime/{{ anime.link.replace('https://ww1.anoboy.boo/', '') }}" class="anime-card-link">
-        <div class="anime-card">
-            <img src="{{ anime.cover }}" class="cover-img" alt="{{ anime.title }}"
-                 onerror="this.src='https://via.placeholder.com/300x180/dc2626/ffffff?text=No+Image'">
-            <div class="card-body">
-                <div class="anime-title">{{ anime.title }}</div>
-                <div class="episode-time">{{ anime.jam }}</div>
-            </div>
-        </div>
+{% endfor %}
+</div>
+{% if results %}
+<div class="pag">
+    <a href="/search?q={{ query|urlencode }}&page={{ current_page-1 }}" class="{% if current_page==1 %}dis{% endif %}">
+        <i class="fas fa-chevron-left"></i> Prev
     </a>
-    {% else %}
-    <div class="col-12">
-        <div class="text-center py-4">
-            <i class="fas fa-search fa-2x text-muted mb-2"></i>
-            <h5 class="text-muted">Tidak ada hasil ditemukan</h5>
-            <p class="text-muted small mb-3">Coba dengan kata kunci yang berbeda atau cek halaman berikutnya</p>
-            <a href="/" class="btn btn-primary btn-sm">
-                <i class="fas fa-home me-1"></i>Kembali ke Beranda
-            </a>
-        </div>
-    </div>
-    {% endfor %}
+    <span>{{ current_page }}</span>
+    <a href="/search?q={{ query|urlencode }}&page={{ current_page+1 }}">Next <i class="fas fa-chevron-right"></i></a>
 </div>
-
-<!-- PAGINATION UNTUK SEARCH -->
-<div class="row mt-3">
-    <div class="col-12">
-        <nav aria-label="Page navigation">
-            <ul class="pagination justify-content-center pagination-sm">
-                <li class="page-item {% if current_page == 1 %}disabled{% endif %}">
-                    <a class="page-link" href="/search?q={{ query|urlencode }}&page={{ current_page - 1 }}">
-                        <i class="fas fa-chevron-left me-1"></i>Prev
-                    </a>
-                </li>
-                <li class="page-item">
-                    <span class="page-link">Page {{ current_page }}</span>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="/search?q={{ query|urlencode }}&page={{ current_page + 1 }}">
-                        Next <i class="fas fa-chevron-right ms-1"></i>
-                    </a>
-                </li>
-            </ul>
-        </nav>
-    </div>
-</div>
+{% endif %}
 {% endblock %}

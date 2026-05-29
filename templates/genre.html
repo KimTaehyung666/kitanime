@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{{ label }} — KitaNime{% endblock %}
+{% block content %}
+<div class="phero">
+    <h1><span style="color:var(--red)">{{ label }}</span></h1>
+    <p>Anime genre {{ label }} subtitle Indonesia</p>
+</div>
+
+<div class="cgrid">
+{% for anime in items %}
+<a href="/anime/{{ anime.link.replace('https://ww1.anoboy.boo/','') }}" class="acard">
+    <img src="{{ anime.cover }}" alt="{{ anime.title }}" loading="lazy"
+         onerror="this.src='https://via.placeholder.com/300x450/e5192c/fff?text=KN'">
+    <div class="acard-body">
+        <div class="acard-title">{{ anime.title }}</div>
+        <div class="acard-time">{{ anime.jam }}</div>
+    </div>
+</a>
+{% else %}
+<div style="grid-column:1/-1">
+    <div class="empty"><i class="fas fa-box-open"></i><p>Tidak ada konten untuk genre ini</p></div>
+</div>
+{% endfor %}
+</div>
+
+<div class="pag">
+    <a href="?page={{ current_page-1 }}" class="{% if current_page==1 %}dis{% endif %}">
+        <i class="fas fa-chevron-left"></i> Prev
+    </a>
+    <span>{{ current_page }}</span>
+    <a href="?page={{ current_page+1 }}">Next <i class="fas fa-chevron-right"></i></a>
+</div>
+{% endblock %}

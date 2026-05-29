@@ -1,92 +1,67 @@
 {% extends "base.html" %}
-
 {% block content %}
-<!-- Latest Anime Section -->
-<div class="row mb-4">
-    <div class="col-12">
-        <h2 class="section-title">Selamat Datang di KitaNime</h2>
-        <p class="text-muted mb-4">Platform streaming anime subtitle indonesia terlengkap. Nikmati ribuan anime berkualitas tinggi dengan subtitle indonesia yang akurat dan tanpa iklan</p>
-    </div>
+
+<!-- HERO -->
+<div style="padding:4px 0 10px">
+    <h1 style="font-family:'Sora',sans-serif;font-size:1.55rem;font-weight:800;letter-spacing:-.5px;line-height:1.2;margin-bottom:10px">
+        Selamat Datang di <span style="color:var(--red)">KitaNime</span>
+    </h1>
+    <p style="color:var(--sub);font-size:.88rem;line-height:1.6;margin-bottom:0">
+        Platform streaming anime subtitle indonesia terlengkap. Nikmati ribuan anime berkualitas tinggi dengan subtitle indonesia yang akurat dan tanpa iklan.
+    </p>
 </div>
 
-<!-- ✅ KARTU: TEKS WAKTU RAPIH, TANPA TITIK KUNING, TULISAN UP SEKALI SAJA -->
-<div class="card-grid">
-    {% for anime in anime_list %}
-    <a href="/anime/{{ anime.link.replace('https://ww1.anoboy.boo/', '') }}" class="anime-card-link">
-        <div class="anime-card">
-            <img src="{{ anime.cover }}" class="cover-img" alt="{{ anime.title }}" 
-                 onerror="this.src='https://via.placeholder.com/300x180/dc2626/ffffff?text=No+Image'">
-            <div class="card-body">
-                <div class="anime-title">{{ anime.title }}</div>
-                <div class="episode-time">
-                	{{ anime.jam }}
-                     
-                </div>
-            </div>
-        </div>
+<!-- UPDATE TERBARU -->
+<div class="shd" style="margin-top:12px">
+    <h2><span>Update</span> Terbaru</h2>
+</div>
+
+<div class="cgrid">
+{% for anime in anime_list %}
+<a href="/anime/{{ anime.link.replace('https://ww1.anoboy.boo/','') }}" class="acard">
+    <span class="abadge badge-new">NEW</span>
+    <img src="{{ anime.cover }}" alt="{{ anime.title }}"
+         loading="lazy"
+         onerror="this.src='https://via.placeholder.com/300x450/e5192c/fff?text=KN'">
+    <div class="acard-body">
+        <div class="acard-title">{{ anime.title }}</div>
+        <div class="acard-time">{{ anime.jam }}</div>
+    </div>
+</a>
+{% else %}
+<div style="grid-column:1/-1">
+    <div class="empty"><i class="fas fa-satellite-dish"></i><p>Tidak ada anime. Refresh!</p></div>
+</div>
+{% endfor %}
+</div>
+
+<div class="pag">
+    <a href="/?page={{ current_page-1 }}" class="{% if current_page==1 %}dis{% endif %}">
+        <i class="fas fa-chevron-left"></i> Prev
     </a>
-    {% else %}
-    <div class="col-12">
-        <div class="text-center py-4">
-            <i class="fas fa-search fa-2x text-muted mb-2"></i>
-            <h5 class="text-muted">Tidak ada anime ditemukan</h5>
-            <p class="text-muted small">Silakan refresh halaman atau coba lagi nanti</p>
-        </div>
-    </div>
-    {% endfor %}
+    <span>{{ current_page }}</span>
+    <a href="/?page={{ current_page+1 }}">Next <i class="fas fa-chevron-right"></i></a>
 </div>
 
-<!-- Pagination -->
-<div class="row mt-4 mb-5">
-    <div class="col-12">
-        <nav aria-label="Page navigation">
-            <ul class="pagination justify-content-center pagination-sm">
-                <li class="page-item {% if current_page == 1 %}disabled{% endif %}">
-                    <a class="page-link" href="/?page={{ current_page - 1 }}">
-                        <i class=""></i> Prev
-                    </a>
-                </li>
-                <li class="page-item">
-                    <span class="page-link">{{ current_page }}</span>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="/?page={{ current_page + 1 }}">
-                        Next <i class=""></i>
-                    </a>
-                </li>
-            </ul>
-        </nav>
-    </div>
-</div>
-
-<!-- Featured Movies Section -->
 {% if featured_movies %}
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="section-title h4 mb-0">Movies</h2>
-            <a href="/movies" class="btn btn-red btn-sm">
-                Lihat Semua <i class=""></i>
-            </a>
-        </div>
-
-        <div class="card-grid">
-            {% for movie in featured_movies %}
-            <a href="/anime/{{ movie.link.replace('https://ww1.anoboy.boo/', '') }}" class="anime-card-link">
-                <div class="anime-card">
-                    <img src="{{ movie.cover }}" class="cover-img" alt="{{ movie.title }}" 
-                         onerror="this.src='https://via.placeholder.com/300x180/dc2626/ffffff?text=No+Image'">
-                    <div class="card-body">
-                        <div class="anime-title">{{ movie.title }}</div>
-                        <div class="episode-time">
-                        	<i class="fas fa-film me-1 text-warning"></i>Movie
-                        </div>
-                    </div>
-                </div>
-            </a>
-            {% endfor %}
-        </div>
+<!-- MOVIES -->
+<div class="shd" style="margin-top:16px">
+    <h2><span>Movies</span> Terbaru</h2>
+    <a href="/movies" class="btn-more">Lihat Semua <i class="fas fa-arrow-right"></i></a>
+</div>
+<div class="cgrid">
+{% for m in featured_movies %}
+<a href="/anime/{{ m.link.replace('https://ww1.anoboy.boo/','') }}" class="acard">
+    <span class="abadge badge-movie">MOVIE</span>
+    <img src="{{ m.cover }}" alt="{{ m.title }}" loading="lazy"
+         onerror="this.src='https://via.placeholder.com/300x450/e5192c/fff?text=KN'">
+    <div class="acard-body">
+        <div class="acard-title">{{ m.title }}</div>
+        <div class="acard-time">Movie</div>
     </div>
+</a>
+{% endfor %}
 </div>
 {% endif %}
+
 {% endblock %}

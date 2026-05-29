@@ -1,138 +1,182 @@
 {% extends "base.html" %}
-{% block title %}{{ anime.title }} - Kitanime{% endblock %}
+{% block title %}{{ anime.title }} — KitaNime{% endblock %}
 
 {% block content %}
 {% if anime.title %}
 
-<div class="row g-3">
-    <!-- SIDEBAR INFO -->
-    <div class="col-lg-4 col-md-5">
-        <div class="detail-card">
-            <img src="{{ anime.cover }}" class="img-fluid rounded-3 mb-3" alt="{{ anime.title }}"
-                 onerror="this.src='https://via.placeholder.com/400x500/dc2626/ffffff?text=No+Cover'">
-            <h2 class="h5 fw-bold mb-2">{{ anime.title }}</h2>
+<!-- Banner mobile -->
+<div class="dbanner">
+    <img src="{{ anime.cover }}" alt="{{ anime.title }}"
+         onerror="this.src='https://via.placeholder.com/700x400/e5192c/fff?text=KN'">
+    <div class="dbanner-info">
+        <div class="dbanner-title">{{ anime.title }}</div>
+    </div>
+</div>
 
-            <!-- ✅ Sinopsis kelihatan jelas -->
-            {% if anime.description %}
-            <p class="sinopsis-text mt-3">
-                {{ anime.description }}
-            </p>
-            {% else %}
-            <p class="text-muted small fst-italic mt-2">Sinopsis tidak tersedia</p>
-            {% endif %}
+<div class="dwrap">
 
-            <h6 class="mt-4 mb-2 fw-semibold"><i class="fas fa-info-circle text-primary me-2"></i>Informasi</h6>
-            {% if anime.info %}
-            <div class="small">
-                {% for key, value in anime.info.items() %}
-                <div class="d-flex justify-content-between py-2 border-bottom border-secondary">
-                    <span class="text-muted">{{ key }}</span>
-                    <span>{{ value }}</span>
-                </div>
-                {% endfor %}
+    <!-- SIDEBAR desktop -->
+    <div class="dside">
+        <img src="{{ anime.cover }}" class="dposter" alt="{{ anime.title }}"
+             onerror="this.src='https://via.placeholder.com/300x450/e5192c/fff?text=KN'">
+        <div class="dside-title">{{ anime.title }}</div>
+
+        {% if anime.description %}
+        <div class="blk">
+            <div class="blk-ttl"><i class="fas fa-align-left"></i> Sinopsis</div>
+            <div class="sin-wrap">
+                <div class="sin-txt" id="sinD">{{ anime.description }}</div>
+                <div class="sin-fade" id="fadeD"></div>
             </div>
-            {% endif %}
+            <button class="btn-exp" onclick="toggleSin('sinD','fadeD',this)">Selengkapnya ▼</button>
         </div>
+        {% endif %}
+
+        {% if anime.info %}
+        <div class="blk">
+            <div class="blk-ttl"><i class="fas fa-info-circle"></i> Info</div>
+            {% for key, value in anime.info.items() %}
+            <div class="irow">
+                <span class="ikey">{{ key }}</span>
+                <span class="ival">
+                    {% if key == 'Score' %}
+                    <span class="score-badge"><i class="fas fa-star" style="font-size:.65rem"></i> {{ value }}</span>
+                    {% elif key == 'Genre' %}
+                    <span class="gtags">
+                        {% for g in value.split(',') %}
+                        <a href="/genre/{{ g.strip()|lower|replace(' ','-') }}" class="gtag">{{ g.strip() }}</a>
+                        {% endfor %}
+                    </span>
+                    {% else %}
+                    {{ value }}
+                    {% endif %}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
     </div>
 
-    <!-- KONTEN UTAMA -->
-    <div class="col-lg-8 col-md-7">
-        <!-- PLAYER -->
+    <!-- MAIN -->
+    <div>
+
+        <!-- Sinopsis mobile -->
+        {% if anime.description %}
+        <div class="blk" id="sinMob">
+            <div class="blk-ttl"><i class="fas fa-align-left"></i> Sinopsis</div>
+            <div class="sin-wrap">
+                <div class="sin-txt" id="sinM">{{ anime.description }}</div>
+                <div class="sin-fade" id="fadeM"></div>
+            </div>
+            <button class="btn-exp" onclick="toggleSin('sinM','fadeM',this)">Selengkapnya ▼</button>
+        </div>
+        {% endif %}
+
+        <!-- Info mobile -->
+        {% if anime.info %}
+        <div class="blk" id="infoMob">
+            <div class="blk-ttl"><i class="fas fa-info-circle"></i> Info</div>
+            {% for key, value in anime.info.items() %}
+            <div class="irow">
+                <span class="ikey">{{ key }}</span>
+                <span class="ival">
+                    {% if key == 'Score' %}
+                    <span class="score-badge"><i class="fas fa-star" style="font-size:.65rem"></i> {{ value }}</span>
+                    {% elif key == 'Genre' %}
+                    <span class="gtags">
+                        {% for g in value.split(',') %}
+                        <a href="/genre/{{ g.strip()|lower|replace(' ','-') }}" class="gtag">{{ g.strip() }}</a>
+                        {% endfor %}
+                    </span>
+                    {% else %}
+                    {{ value }}
+                    {% endif %}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Player -->
         {% if anime.stream_links or anime.episode_servers %}
-        <div class="detail-card">
-            <div class="ratio ratio-16x9 mb-3 rounded-3 overflow-hidden">
-                <iframe id="videoPlayer" 
-                        src="{% if anime.stream_links %}{{ anime.stream_links[0].url }}{% else %}{{ anime.episode_servers[0].episodes[0].url }}{% endif %}" 
-                        frameborder="0" allowfullscreen allow="autoplay; encrypted-media">
+        <div class="blk pblock">
+            <div class="pframe">
+                <iframe id="vidPlayer"
+                    src="{% if anime.stream_links %}{{ anime.stream_links[0].url }}{% elif anime.episode_servers %}{{ anime.episode_servers[0].episodes[0].url }}{% endif %}"
+                    allowfullscreen allow="autoplay; encrypted-media" scrolling="no">
                 </iframe>
             </div>
 
-            <!-- PILIH SERVER / KUALITAS VIDEO ✅ DIPERBAIKI BIAR TEKS BERUBAH -->
-            <div class="mb-3">
-                <label class="form-label mb-2">Pilih Server:</label>
-                <div class="dropdown">
-                    <button class="dropdown-custom" type="button" data-bs-toggle="dropdown" id="serverButton">
-                        <!-- ✅ Teks akan berubah sesuai pilihan -->
-                        <span id="serverText">{% if anime.episode_servers %}{{ anime.episode_servers[0].episodes[0].quality }} - {{ anime.episode_servers[0].server }}{% else %}Default{% endif %}</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
-                    <ul class="dropdown-menu w-100">
-                        {% for server in anime.episode_servers %}
-                            {% for episode in server.episodes %}
-                            <li>
-                                <a class="dropdown-item" href="#" 
-                                   onclick="changeVideo('{{ episode.url }}', '{{ episode.quality }} - {{ server.server }}')">
-                                    {{ episode.quality }} - {{ server.server }}
-                                </a>
-                            </li>
-                            {% endfor %}
-                        {% endfor %}
-                    </ul>
-                </div>
+            {% if anime.episode_servers %}
+            {% set is_streaming = anime.episode_servers[0].server == 'Streaming' %}
+            <div class="srv-lbl">
+                {% if is_streaming %}Pilih Episode{% else %}Pilih Server{% endif %}
             </div>
+            <select class="srv-sel" onchange="switchSrv(this.value)">
+                {% for server in anime.episode_servers %}
+                    {% for ep in server.episodes %}
+                    <option value="{{ ep.url }}">
+                        {% if is_streaming %}{{ ep.quality }}{% else %}{{ ep.quality }} · {{ server.server }}{% endif %}
+                    </option>
+                    {% endfor %}
+                {% endfor %}
+            </select>
+            {% endif %}
 
-            <!-- NAVIGASI EPISODE -->
             {% if prev_episode or next_episode %}
-            <div class="d-flex gap-3 mb-3">
+            <div class="epnav">
                 {% if prev_episode %}
-                <a href="/anime/{{ prev_episode.url.replace('https://ww1.anoboy.boo/', '') }}" class="btn-red flex-grow-1 text-center text-decoration-none">
-                    Ep Sebelumnya
+                <a href="/anime/{{ prev_episode.url.replace('https://ww1.anoboy.boo/','') }}" class="epbtn prev">
+                    <i class="fas fa-chevron-left"></i> Ep Sebelumnya
                 </a>
                 {% else %}
-                <button class="btn-red flex-grow-1" disabled>Ep Sebelumnya</button>
+                <button class="epbtn prev" disabled><i class="fas fa-chevron-left"></i> Ep Sebelumnya</button>
                 {% endif %}
                 {% if next_episode %}
-                <a href="/anime/{{ next_episode.url.replace('https://ww1.anoboy.boo/', '') }}" class="btn-dark flex-grow-1 text-center text-decoration-none">
-                    Ep Selanjutnya
+                <a href="/anime/{{ next_episode.url.replace('https://ww1.anoboy.boo/','') }}" class="epbtn next">
+                    Ep Selanjutnya <i class="fas fa-chevron-right"></i>
                 </a>
                 {% else %}
-                <button class="btn-dark flex-grow-1" disabled>Ep Selanjutnya</button>
+                <button class="epbtn next" disabled>Ep Selanjutnya <i class="fas fa-chevron-right"></i></button>
                 {% endif %}
             </div>
             {% endif %}
         </div>
         {% endif %}
 
-        <!-- ✅ BAGIAN DOWNLOAD: TULISAN UBAH JADI "DOWNLOAD" -->
+        <!-- Download -->
         {% if anime.download_links or anime.batch_downloads %}
-        <div class="detail-card">
-            <h5 class="mb-3 fw-semibold"><i class="fas fa-download text-primary me-2"></i>Download</h5>
-
+        <div class="blk">
+            <div class="blk-ttl"><i class="fas fa-download"></i> Download</div>
             {% if anime.batch_downloads %}
-            <h6 class="text-muted small mb-2">Batch Download</h6>
-            {% for provider in anime.batch_downloads %}
-            <div class="download-item">
-                <div>
-                    <div>{{ provider.provider }}</div>
-                </div>
+            <div style="font-size:.68rem;color:var(--sub);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Batch</div>
+            {% for p in anime.batch_downloads %}
+            <div class="dlrow">
+                <div class="dlname">{{ p.provider }}</div>
                 <div class="dropdown">
-                    <button class="btn-red dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                        Download
+                    <button class="dlbtn dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="fas fa-download"></i> Download
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        {% for link in provider.links %}
-                        <li><a class="dropdown-item" href="{{ link.url }}" target="_blank">{{ link.quality }}</a></li>
+                    <ul class="dl-menu dropdown-menu dropdown-menu-end">
+                        {% for link in p.links %}
+                        <li><a class="dl-item" href="{{ link.url }}" target="_blank">{{ link.quality }}</a></li>
                         {% endfor %}
                     </ul>
                 </div>
             </div>
             {% endfor %}
             {% endif %}
-
             {% if anime.download_links %}
-            <!-- <h6 class="text-muted small mb-2 mt-3">Per Episode</h6> -->
-            {% for provider in anime.download_links %}
-            <div class="download-item">
-                <div>
-                    <div>{{ provider.provider }}</div>
-                </div>
+            {% for p in anime.download_links %}
+            <div class="dlrow">
+                <div class="dlname">{{ p.provider }}</div>
                 <div class="dropdown">
-                    <button class="btn-red dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                        Download
+                    <button class="dlbtn dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="fas fa-download"></i> Download
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        {% for link in provider.links %}
-                        <li><a class="dropdown-item" href="{{ link.url }}" target="_blank">{{ link.quality }}</a></li>
+                    <ul class="dl-menu dropdown-menu dropdown-menu-end">
+                        {% for link in p.links %}
+                        <li><a class="dl-item" href="{{ link.url }}" target="_blank">{{ link.quality }}</a></li>
                         {% endfor %}
                     </ul>
                 </div>
@@ -142,45 +186,53 @@
         </div>
         {% endif %}
 
-        <!-- DAFTAR EPISODE / SEASON -->
+        <!-- Episode list -->
         {% if anime.seasons %}
-        <div class="detail-card">
-            <h5 class="mb-3 fw-semibold"><i class="fas fa-layer-group text-primary me-2"></i>Daftar Episode</h5>
+        <div class="blk">
+            <div class="blk-ttl"><i class="fas fa-list"></i> Daftar Episode</div>
             {% for season in anime.seasons %}
-            <div class="mb-3">
-                <h6 class="text-muted mb-2">{{ season.name }}</h6>
-                <div class="d-flex flex-wrap gap-2">
-                    {% for episode in season.episodes %}
-                    <a href="/anime/{{ episode.url.replace('https://ww1.anoboy.boo/', '') }}" class="btn-dark text-decoration-none small">
-                        <i class="fas fa-play-circle me-1 text-success"></i> {{ episode.title }}
-                    </a>
-                    {% endfor %}
-                </div>
+            {% if season.name %}
+            <div style="font-size:.72rem;color:var(--sub);font-weight:700;margin-bottom:8px">{{ season.name }}</div>
+            {% endif %}
+            <div class="eplist" style="margin-bottom:12px">
+                {% for episode in season.episodes %}
+                <a href="/anime/{{ episode.url.replace('https://ww1.anoboy.boo/','') }}" class="epchip">
+                    {{ episode.title }}
+                </a>
+                {% endfor %}
             </div>
             {% endfor %}
         </div>
         {% endif %}
-        
+
     </div>
 </div>
 
 {% else %}
-<div class="alert alert-danger text-center py-4 rounded-3 shadow-sm">
-    <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+<div class="empty">
+    <i class="fas fa-exclamation-triangle"></i>
     <h5>Anime Tidak Ditemukan</h5>
-    <p class="mb-0 small">Terjadi kesalahan saat memuat data</p>
 </div>
 {% endif %}
 
-{% block scripts %}
-<script>
-// ✅ FUNGSI DIPERBAIKI: GANTI VIDEO + GANTI TULISAN DI TOMBOL
-function changeVideo(url, title) {
-    document.getElementById('videoPlayer').src = url;
-    // Ini yang ngerubah tulisan pas kamu pilih
-    document.getElementById('serverText').textContent = title;
-}
-</script>
 {% endblock %}
 
+{% block extra_js %}
+function switchSrv(url){document.getElementById('vidPlayer').src=url;}
+function toggleSin(tId,fId,btn){
+    var el=document.getElementById(tId);
+    var fade=document.getElementById(fId);
+    var exp=el.classList.toggle('exp');
+    fade.classList.toggle('hid',exp);
+    btn.textContent=exp?'Tutup ▲':'Selengkapnya ▼';
+}
+function chkLayout(){
+    var sm=document.getElementById('sinMob');
+    var im=document.getElementById('infoMob');
+    var desk=window.innerWidth>=768;
+    if(sm)sm.style.display=desk?'none':'';
+    if(im)im.style.display=desk?'none':'';
+}
+chkLayout();
+window.addEventListener('resize',chkLayout);
 {% endblock %}
