@@ -107,37 +107,38 @@
                 </iframe>
             </div>
 
-            {% if anime.episode_servers %}
-            {% set is_streaming = anime.episode_servers[0].server == 'Streaming' %}
-            <div class="srv-lbl">
-                {% if is_streaming %}Pilih Episode{% else %}Pilih Server{% endif %}
-            </div>
-            <select class="srv-sel" onchange="switchSrv(this.value)">
-                {% for server in anime.episode_servers %}
-                    {% for ep in server.episodes %}
-                    <option value="{{ ep.url }}">
-                        {% if is_streaming %}{{ ep.quality }}{% else %}{{ ep.quality }} · {{ server.server }}{% endif %}
-                    </option>
+            {% if anime.episode_servers or prev_episode or next_episode %}
+            <div class="srv-bar">
+                <span class="srv-bar-lbl">Server</span>
+                {% if anime.episode_servers %}
+                {% set is_streaming = anime.episode_servers[0].server == 'Streaming' %}
+                <select class="srv-sel" onchange="switchSrv(this.value)">
+                    {% for server in anime.episode_servers %}
+                        {% for ep in server.episodes %}
+                        <option value="{{ ep.url }}">
+                            {% if is_streaming %}{{ ep.quality }}{% else %}{{ ep.quality }} · {{ server.server }}{% endif %}
+                        </option>
+                        {% endfor %}
                     {% endfor %}
-                {% endfor %}
-            </select>
-            {% endif %}
-
-            {% if prev_episode or next_episode %}
-            <div class="epnav">
-                {% if prev_episode %}
-                <a href="/anime/{{ prev_episode.url.replace('https://ww1.anoboy.boo/','') }}" class="epbtn prev">
-                    <i class="fas fa-chevron-left"></i> Ep Sebelumnya
-                </a>
-                {% else %}
-                <button class="epbtn prev" disabled><i class="fas fa-chevron-left"></i> Ep Sebelumnya</button>
+                </select>
                 {% endif %}
-                {% if next_episode %}
-                <a href="/anime/{{ next_episode.url.replace('https://ww1.anoboy.boo/','') }}" class="epbtn next">
-                    Ep Selanjutnya <i class="fas fa-chevron-right"></i>
-                </a>
-                {% else %}
-                <button class="epbtn next" disabled>Ep Selanjutnya <i class="fas fa-chevron-right"></i></button>
+                {% if prev_episode or next_episode %}
+                <div class="epnav">
+                    {% if prev_episode %}
+                    <a href="/anime/{{ prev_episode.url.replace('https://ww1.anoboy.boo/','') }}" class="epbtn" title="Ep Sebelumnya">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                    {% else %}
+                    <button class="epbtn" disabled><i class="fas fa-chevron-left"></i></button>
+                    {% endif %}
+                    {% if next_episode %}
+                    <a href="/anime/{{ next_episode.url.replace('https://ww1.anoboy.boo/','') }}" class="epbtn" title="Ep Selanjutnya">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                    {% else %}
+                    <button class="epbtn" disabled><i class="fas fa-chevron-right"></i></button>
+                    {% endif %}
+                </div>
                 {% endif %}
             </div>
             {% endif %}

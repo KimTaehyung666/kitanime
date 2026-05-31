@@ -987,15 +987,23 @@ def anime_detail_clean(anime_path):
     """Route bersih untuk detail anime"""
     full_url = f"https://ww1.anoboy.boo/{anime_path}"
     detail = scraper.get_anime_detail(full_url)
+
+    # Skip prev/next untuk movie — cek dari judul aja
+    title = detail.get('title', '').lower()
+    is_movie = 'movie' in title or ' film' in title
     
-    # Get previous and next episodes
-    prev_next = scraper.get_prev_next_episodes(full_url)
+    prev_episode = None
+    next_episode = None
+    if not is_movie:
+        prev_next = scraper.get_prev_next_episodes(full_url)
+        prev_episode = prev_next["prev"]
+        next_episode = prev_next["next"]
     
     return render_template('detail.html', 
                          anime=detail, 
                          clean_url=f"/{anime_path}",
-                         prev_episode=prev_next["prev"],
-                         next_episode=prev_next["next"])
+                         prev_episode=prev_episode,
+                         next_episode=next_episode)
 
 @app.route('/anime/detail')
 def anime_detail_legacy():
