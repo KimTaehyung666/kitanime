@@ -69,8 +69,8 @@ class AnimeScraper:
         """Bersihkan judul dari karakter aneh dan rapikan"""
         title = re.sub(r'[^\w\s\-\.\,\!\(\)]', '', title)
         title = re.sub(r'\s+', ' ', title)
-        if len(title) > 50:
-            title = title[:47] + '...'
+        # Tidak dipotong di sini — biar CSS (line-clamp) yang atur overflow,
+        # supaya judul tidak kepotong dua kali (server + CSS).
         return title.strip()
 
     @staticmethod
@@ -87,6 +87,21 @@ class AnimeScraper:
         if m:
             return t[:m.start()].strip(), m.group(1)
         return t, ""
+
+    @classmethod
+    def attach_episode(cls, items):
+        """Untuk tiap item di list: pisahkan nomor episode dari judul.
+
+        Menambah key 'episode' dan merapikan 'title'. Aman dipanggil
+        berkali-kali (idempotent). Mengembalikan list yang sama.
+        """
+        for it in items:
+            if 'episode' in it:
+                continue
+            base, ep = cls.extract_episode(it.get('title', ''))
+            it['title'] = base
+            it['episode'] = ep
+        return items
 
 
     def search_anime(self, keyword, page=1):
@@ -1124,10 +1139,10 @@ def search():
     page = request.args.get('page', 1, type=int)
     
     if query:
-        results = scraper.search_anime(query, page)
+        results = scraper.attach_episode(scraper.search_anime(query, page))
     else:
         results = []
-    
+
     return render_template('search.html', results=results, query=query, current_page=page)
 
 @app.route('/movies')
@@ -1221,7 +1236,7 @@ def genre_page(slug):
     page = request.args.get('page', 1, type=int)
     # Cari label dari GENRE_LIST
     label = next((name for s, name in GENRE_LIST if s == slug), slug.replace('-', ' ').title())
-    items = scraper.get_category_list(slug, page)
+    items = scraper.attach_episode(scraper.get_category_list(slug, page))
     return render_template('genre.html',
                            items=items,
                            slug=slug,
@@ -1232,7 +1247,7 @@ def genre_page(slug):
 @app.route('/live-action')
 def live_action():
     page = request.args.get('page', 1, type=int)
-    items = scraper.get_category_list('live-action-movie', page)
+    items = scraper.attach_episode(scraper.get_category_list('live-action-movie', page))
     return render_template('genre.html',
                            items=items,
                            slug='live-action-movie',
