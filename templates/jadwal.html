@@ -71,10 +71,10 @@
 <div id="typeView">
     {% for group in schedule.by_type %}
     <div class="jsec">
-        <h3 class="jsec-h"><i class="fas fa-layer-group"></i> {{ group.type }}
-            <span class="cnt">{{ group.items|length }}</span></h3>
+        <h3 class="jsec-h"><i class="fas fa-layer-group"></i> {{ group['type'] }}
+            <span class="cnt">{{ group['items']|length }}</span></h3>
         <div class="cgrid">
-        {% for a in group.items %}
+        {% for a in group['items'] %}
             {% include "_jcard.html" %}
         {% endfor %}
         </div>
