@@ -46,11 +46,14 @@ class AnimeScraper:
                         cover_url = ""
                         if img and img.get('src'):
                             cover_url = self.resolve_url(img['src'])
-                        
-                        clean_title = self.clean_title(title_div.text.strip())
-                        
+
+                        raw_title = title_div.text.strip()
+                        base_title, episode = self.extract_episode(raw_title)
+                        clean_title = self.clean_title(base_title)
+
                         anime_data = {
                             "title": clean_title,
+                            "episode": episode,
                             "jam": jam_div.text.strip() if jam_div else "Unknown",
                             "link": link['href'],
                             "cover": cover_url
@@ -69,7 +72,23 @@ class AnimeScraper:
         if len(title) > 50:
             title = title[:47] + '...'
         return title.strip()
-    
+
+    @staticmethod
+    def extract_episode(title):
+        """Pisahkan nomor episode dari judul.
+
+        'Kore Kaite Shine Episode 1' -> ('Kore Kaite Shine', '1')
+        Mengembalikan (judul_tanpa_episode, nomor_episode). Nomor '' jika tidak ada.
+        """
+        t = title.strip()
+        m = re.search(r'\s*[-–]?\s*Episode\s*(\d+(?:\.\d+)?)\s*$', t, re.IGNORECASE)
+        if not m:
+            m = re.search(r'\s*[-–]?\s*Eps?\.?\s*(\d+(?:\.\d+)?)\s*$', t, re.IGNORECASE)
+        if m:
+            return t[:m.start()].strip(), m.group(1)
+        return t, ""
+
+
     def search_anime(self, keyword, page=1):
         """Search anime from anoboy search"""
         try:
