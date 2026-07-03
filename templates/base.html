@@ -206,6 +206,13 @@
         letter-spacing:.4px;text-transform:uppercase;
     }
     .badge-new{background:var(--red);color:#fff;}
+    .abadge.badge-eps{
+        left:auto;right:6px;
+        background:rgba(0,0,0,.78);color:#fff;
+        border:1px solid rgba(255,255,255,.25);
+        display:inline-flex;align-items:center;gap:3px;
+    }
+    .abadge.badge-eps i{font-size:.5rem;}
     .badge-movie{
         background:rgba(0,0,0,.7);color:#ffd700;
         border:1px solid rgba(255,215,0,.35);
@@ -449,10 +456,22 @@
         position:relative;z-index:1;
     }
     footer b{color:var(--red);}
+
+    /* Top loading bar (muncul saat pindah halaman) */
+    #nprog{
+        position:fixed;top:0;left:0;height:3px;width:0;
+        background:linear-gradient(90deg,var(--red),var(--red2));
+        box-shadow:0 0 10px var(--red2);
+        z-index:9999;opacity:0;
+        transition:width .2s ease,opacity .3s ease;
+        pointer-events:none;
+    }
+    #nprog.on{opacity:1;}
     </style>
     {% block extra_css %}{% endblock %}
 </head>
 <body>
+<div id="nprog"></div>
 
 <nav class="topbar">
     <div class="topbar-inner">
@@ -471,6 +490,7 @@
             <div class="dropdown">
                 <button class="tbtn" data-bs-toggle="dropdown"><i class="fas fa-bars"></i></button>
                 <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="/jadwal"><i class="fas fa-calendar-days me-2"></i>Jadwal Rilis</a></li>
                     <li><a class="dropdown-item" href="/movies"><i class="fas fa-film me-2"></i>Movies</a></li>
                     <li><a class="dropdown-item" href="/genre/live-action-movie"><i class="fas fa-clapperboard me-2"></i>Live Action</a></li>
                     <li><a class="dropdown-item" href="/genre/tokusatsu"><i class="fas fa-mask me-2"></i>Tokusatsu</a></li>
@@ -524,7 +544,7 @@
 </div>
 
 <footer>
-    &copy; 2025 <b>KitaNime</b> &middot; Nonton Anime Sub Indo Tanpa Iklan &middot; Made with ♥ by VaL
+    &copy; 2026 <b>KitaNime</b> &middot; Nonton Anime Sub Indo Tanpa Iklan &middot; Made with ♥ by VaL
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -540,6 +560,40 @@ function setLight(on){
 }
 if(localStorage.getItem('theme')==='light')setLight(true);
 themeBtn.addEventListener('click',()=>setLight(!document.body.classList.contains('light')));
+
+// Top loading bar: tampil saat navigasi ke halaman lain
+(function(){
+    var bar=document.getElementById('nprog'), timer;
+    function start(){
+        clearInterval(timer);
+        bar.classList.add('on'); bar.style.width='0';
+        var w=0;
+        requestAnimationFrame(function(){ bar.style.width='25%'; });
+        timer=setInterval(function(){
+            w+=Math.max(1,(90-w)*0.08);
+            if(w>=90){w=90;clearInterval(timer);}
+            bar.style.width=w+'%';
+        },200);
+    }
+    // Picu saat klik link internal (bukan tab baru / anchor / eksternal)
+    document.addEventListener('click',function(e){
+        var a=e.target.closest('a');
+        if(!a)return;
+        var href=a.getAttribute('href')||'';
+        if(a.target==='_blank'||a.hasAttribute('download'))return;
+        if(!href||href.charAt(0)==='#'||href.indexOf('javascript:')===0)return;
+        if(a.host && a.host!==location.host)return;
+        start();
+    },true);
+    // Picu saat submit form pencarian
+    document.addEventListener('submit',start,true);
+    // Selesai saat halaman baru selesai dimuat / kembali dari cache
+    window.addEventListener('pageshow',function(){
+        clearInterval(timer);
+        bar.style.width='100%';
+        setTimeout(function(){ bar.classList.remove('on'); bar.style.width='0'; },300);
+    });
+})();
 {% block extra_js %}{% endblock %}
 </script>
 </body>

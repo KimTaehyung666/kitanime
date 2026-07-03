@@ -9,6 +9,7 @@
 <div class="cgrid">
 {% for anime in items %}
 <a href="/anime/{{ anime.link.replace('https://ww1.anoboy.boo/','') }}" class="acard">
+    {% if anime.episode %}<span class="abadge badge-eps"><i class="fas fa-play"></i>Eps {{ anime.episode }}</span>{% endif %}
     <img src="{{ anime.cover }}" alt="{{ anime.title }}" loading="lazy"
          onerror="this.src='https://via.placeholder.com/300x450/e5192c/fff?text=KN'">
     <div class="acard-body">

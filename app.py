@@ -46,11 +46,14 @@ class AnimeScraper:
                         cover_url = ""
                         if img and img.get('src'):
                             cover_url = self.resolve_url(img['src'])
-                        
-                        clean_title = self.clean_title(title_div.text.strip())
-                        
+
+                        raw_title = title_div.text.strip()
+                        base_title, episode = self.extract_episode(raw_title)
+                        clean_title = self.clean_title(base_title)
+
                         anime_data = {
                             "title": clean_title,
+                            "episode": episode,
                             "jam": jam_div.text.strip() if jam_div else "Unknown",
                             "link": link['href'],
                             "cover": cover_url
@@ -66,10 +69,41 @@ class AnimeScraper:
         """Bersihkan judul dari karakter aneh dan rapikan"""
         title = re.sub(r'[^\w\s\-\.\,\!\(\)]', '', title)
         title = re.sub(r'\s+', ' ', title)
-        if len(title) > 50:
-            title = title[:47] + '...'
+        # Tidak dipotong di sini — biar CSS (line-clamp) yang atur overflow,
+        # supaya judul tidak kepotong dua kali (server + CSS).
         return title.strip()
-    
+
+    @staticmethod
+    def extract_episode(title):
+        """Pisahkan nomor episode dari judul.
+
+        'Kore Kaite Shine Episode 1' -> ('Kore Kaite Shine', '1')
+        Mengembalikan (judul_tanpa_episode, nomor_episode). Nomor '' jika tidak ada.
+        """
+        t = title.strip()
+        m = re.search(r'\s*[-–]?\s*Episode\s*(\d+(?:\.\d+)?)\s*$', t, re.IGNORECASE)
+        if not m:
+            m = re.search(r'\s*[-–]?\s*Eps?\.?\s*(\d+(?:\.\d+)?)\s*$', t, re.IGNORECASE)
+        if m:
+            return t[:m.start()].strip(), m.group(1)
+        return t, ""
+
+    @classmethod
+    def attach_episode(cls, items):
+        """Untuk tiap item di list: pisahkan nomor episode dari judul.
+
+        Menambah key 'episode' dan merapikan 'title'. Aman dipanggil
+        berkali-kali (idempotent). Mengembalikan list yang sama.
+        """
+        for it in items:
+            if 'episode' in it:
+                continue
+            base, ep = cls.extract_episode(it.get('title', ''))
+            it['title'] = base
+            it['episode'] = ep
+        return items
+
+
     def search_anime(self, keyword, page=1):
         """Search anime from anoboy search"""
         try:
@@ -281,6 +315,141 @@ class AnimeScraper:
             return result[:24]
         except Exception:
             return []
+
+    def get_schedule(self):
+        """Ambil jadwal rilis anime dari halaman seasonal anoboy.
+
+        Sumber (/uploads/jadwal.php) mengelompokkan anime per TIPE
+        (TV New, TV Continuing, ONA, OVA, Movie, Special), bukan per hari.
+        Method ini mengembalikan dua bentuk sekaligus:
+          - "by_day":  dict {Senin..Minggu: [anime]} dihitung dari tanggal mulai
+          - "by_type": list [{type, items:[anime]}] sesuai urutan sumber
+        """
+        DAYS = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"]
+        empty = {"by_day": {d: [] for d in DAYS}, "by_type": [], "days": DAYS}
+        try:
+            url = urljoin(self.base_url, "uploads/jadwal.php")
+            r = requests.get(url, headers=HEADERS, timeout=20)
+            soup = BeautifulSoup(r.text, "html.parser")
+
+            by_day = {d: [] for d in DAYS}
+            by_type = []
+            type_index = {}
+            current_type = None
+
+            # Telusuri header tipe dan blok anime sesuai urutan dokumen
+            nodes = soup.find_all(
+                'div',
+                class_=lambda c: c and (
+                    'anime-header' in c or 'js-anime-category-producer' in c
+                )
+            )
+
+            for node in nodes:
+                classes = node.get('class', [])
+
+                if 'anime-header' in classes:
+                    label = node.get_text(strip=True)
+                    if label:
+                        current_type = label
+                        if label not in type_index:
+                            type_index[label] = []
+                            by_type.append({"type": label, "items": type_index[label]})
+                    continue
+
+                # Blok anime
+                title_tag = node.find('a', class_='link-title')
+                title = title_tag.get_text(strip=True) if title_tag else ""
+                if not title:
+                    continue
+
+                img = node.find('img')
+                cover = ""
+                if img and img.get('src'):
+                    cover = img['src']
+
+                score_tag = node.find('span', class_='js-score')
+                score = score_tag.get_text(strip=True) if score_tag else "0"
+                try:
+                    score = "" if float(score) == 0 else score
+                except ValueError:
+                    pass
+
+                date_tag = node.find('span', class_='js-start_date')
+                raw_date = date_tag.get_text(strip=True) if date_tag else ""
+                weekday = self.weekday_from_yyyymmdd(raw_date)
+
+                anime = {
+                    "title": self.clean_title(title),
+                    "cover": cover,
+                    "score": score,
+                    "start_date": self.format_start_date(raw_date),
+                    "type": current_type or "Lainnya",
+                    "day": weekday,
+                    "search_q": self.title_to_query(title),
+                }
+
+                if current_type and current_type in type_index:
+                    type_index[current_type].append(anime)
+                if weekday:
+                    by_day[weekday].append(anime)
+
+            # Buang grup tanpa item (mis. banner musim "NEW SPRING ...")
+            by_type = [g for g in by_type if g["items"]]
+
+            return {"by_day": by_day, "by_type": by_type, "days": DAYS}
+        except Exception:
+            return empty
+
+    @staticmethod
+    def weekday_from_yyyymmdd(raw):
+        """Ubah tanggal 'YYYYMMDD' jadi nama hari Indonesia. '' jika invalid."""
+        DAYS = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"]
+        if not raw or len(raw) != 8 or not raw.isdigit():
+            return ""
+        try:
+            y, m, d = int(raw[:4]), int(raw[4:6]), int(raw[6:8])
+            # Algoritma Sakamoto: 0=Minggu .. 6=Sabtu
+            t = [0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4]
+            yy = y - (1 if m < 3 else 0)
+            w = (yy + yy // 4 - yy // 100 + yy // 400 + t[m - 1] + d) % 7
+            # Petakan ke daftar Senin-first
+            return DAYS[(w + 6) % 7]
+        except (ValueError, IndexError):
+            return ""
+
+    @staticmethod
+    def format_start_date(raw):
+        """Ubah 'YYYYMMDD' jadi 'DD MMM YYYY' (Indonesia). '' jika invalid."""
+        if not raw or len(raw) != 8 or not raw.isdigit():
+            return ""
+        MONTHS = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
+                  "Jul", "Agu", "Sep", "Okt", "Nov", "Des"]
+        try:
+            y, m, d = raw[:4], int(raw[4:6]), int(raw[6:8])
+            return f"{d:02d} {MONTHS[m - 1]} {y}"
+        except (ValueError, IndexError):
+            return ""
+
+    @staticmethod
+    def title_to_query(title):
+        """Sederhanakan judul jadi keyword pencarian yang lebih cocok.
+
+        Buang penanda season/part dan segala sesudah ':' agar hasil
+        pencarian di anoboy lebih relevan (mis. 'Re:Zero ... 4th Season'
+        -> 'Re Zero kara Hajimeru Isekai Seikatsu').
+        """
+        q = title.strip()
+        # Buang penanda season/part di akhir judul
+        q = re.sub(
+            r'\s+(?:\d+(?:st|nd|rd|th)\s+season|season\s*\d+|part\s*\d+|'
+            r'cour\s*\d+|final\s+season|\d+(?:st|nd|rd|th)\s+cour)\s*$',
+            '', q, flags=re.IGNORECASE
+        )
+        # Rapikan tanda baca jadi spasi
+        q = re.sub(r'[:~\-–—]', ' ', q)
+        q = re.sub(r'\s+', ' ', q).strip()
+        return q or title.strip()
 
     def get_home_movies(self):
         """Get featured movies from homepage sidebar"""
@@ -970,10 +1139,10 @@ def search():
     page = request.args.get('page', 1, type=int)
     
     if query:
-        results = scraper.search_anime(query, page)
+        results = scraper.attach_episode(scraper.search_anime(query, page))
     else:
         results = []
-    
+
     return render_template('search.html', results=results, query=query, current_page=page)
 
 @app.route('/movies')
@@ -981,6 +1150,11 @@ def movie_list():
     page = request.args.get('page', 1, type=int)
     movie_list = scraper.get_movie_list(page)
     return render_template('movies.html', movie_list=movie_list, current_page=page)
+
+@app.route('/jadwal')
+def jadwal():
+    schedule = scraper.get_schedule()
+    return render_template('jadwal.html', schedule=schedule)
 
 @app.route('/anime/<path:anime_path>')
 def anime_detail_clean(anime_path):
@@ -1062,7 +1236,7 @@ def genre_page(slug):
     page = request.args.get('page', 1, type=int)
     # Cari label dari GENRE_LIST
     label = next((name for s, name in GENRE_LIST if s == slug), slug.replace('-', ' ').title())
-    items = scraper.get_category_list(slug, page)
+    items = scraper.attach_episode(scraper.get_category_list(slug, page))
     return render_template('genre.html',
                            items=items,
                            slug=slug,
@@ -1073,7 +1247,7 @@ def genre_page(slug):
 @app.route('/live-action')
 def live_action():
     page = request.args.get('page', 1, type=int)
-    items = scraper.get_category_list('live-action-movie', page)
+    items = scraper.attach_episode(scraper.get_category_list('live-action-movie', page))
     return render_template('genre.html',
                            items=items,
                            slug='live-action-movie',

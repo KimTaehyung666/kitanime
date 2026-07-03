@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Jadwal Rilis — KitaNime{% endblock %}
+{% block content %}
+<style>
+    .jtabs{
+        display:flex;gap:6px;flex-wrap:wrap;
+        margin:4px 0 18px;
+    }
+    .jtab{
+        background:var(--bg2);border:1px solid var(--bdr);
+        color:var(--txt);border-radius:8px;
+        padding:6px 13px;font-size:.75rem;font-weight:700;
+        cursor:pointer;transition:all .2s;
+        font-family:'Sora',sans-serif;
+    }
+    .jtab:hover{border-color:var(--red);color:var(--red);}
+    .jtab.on{background:var(--red);border-color:var(--red);color:#fff;}
+    .jsec{margin-bottom:26px;}
+    .jsec-h{
+        display:flex;align-items:center;gap:8px;
+        font-size:.95rem;font-weight:700;margin:0 0 12px;
+        color:var(--txt);
+    }
+    .jsec-h i{color:var(--red);}
+    .jsec-h .cnt{
+        font-size:.68rem;font-weight:600;color:var(--sub);
+        background:var(--bg3);border:1px solid var(--bdr);
+        border-radius:20px;padding:2px 9px;
+    }
+    .acard-meta{
+        font-size:.61rem;color:var(--sub);
+        display:flex;align-items:center;gap:5px;margin-top:3px;
+    }
+    .acard-meta .score{color:#ffd700;font-weight:700;}
+    .day-hide{display:none;}
+</style>
+
+<div class="phero">
+    <h1>Jadwal <span style="color:var(--red)">Rilis</span></h1>
+    <p>Jadwal tayang anime musim ini — subtitle Indonesia</p>
+</div>
+
+{# ── Tab per hari ── #}
+<div class="jtabs" id="jtabs">
+    <button class="jtab on" data-day="all">Semua</button>
+    {% for d in schedule.days %}
+    <button class="jtab" data-day="{{ d }}">{{ d }}</button>
+    {% endfor %}
+</div>
+
+{# ── Bagian per hari (default tersembunyi, ditampilkan lewat tab) ── #}
+<div id="dayView" class="day-hide">
+    {% for d in schedule.days %}
+    <div class="jsec day-block" data-day="{{ d }}">
+        <h3 class="jsec-h"><i class="fas fa-calendar-day"></i> {{ d }}
+            <span class="cnt">{{ schedule.by_day[d]|length }}</span></h3>
+        <div class="cgrid">
+        {% for a in schedule.by_day[d] %}
+            {% include "_jcard.html" %}
+        {% else %}
+            <div style="grid-column:1/-1">
+                <div class="empty"><i class="fas fa-box-open"></i><p>Tidak ada rilis hari {{ d }}</p></div>
+            </div>
+        {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{# ── Bagian per tipe (tampilan "Semua") ── #}
+<div id="typeView">
+    {% for group in schedule.by_type %}
+    <div class="jsec">
+        <h3 class="jsec-h"><i class="fas fa-layer-group"></i> {{ group['type'] }}
+            <span class="cnt">{{ group['items']|length }}</span></h3>
+        <div class="cgrid">
+        {% for a in group['items'] %}
+            {% include "_jcard.html" %}
+        {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="empty"><i class="fas fa-box-open"></i><p>Jadwal belum tersedia saat ini</p></div>
+    {% endfor %}
+</div>
+
+<script>
+(function(){
+    var tabs = document.querySelectorAll('#jtabs .jtab');
+    var dayView = document.getElementById('dayView');
+    var typeView = document.getElementById('typeView');
+    var blocks = document.querySelectorAll('.day-block');
+
+    tabs.forEach(function(tab){
+        tab.addEventListener('click', function(){
+            tabs.forEach(function(t){ t.classList.remove('on'); });
+            tab.classList.add('on');
+            var day = tab.getAttribute('data-day');
+
+            if(day === 'all'){
+                dayView.classList.add('day-hide');
+                typeView.classList.remove('day-hide');
+                return;
+            }
+            typeView.classList.add('day-hide');
+            dayView.classList.remove('day-hide');
+            blocks.forEach(function(b){
+                b.style.display = (b.getAttribute('data-day') === day) ? '' : 'none';
+            });
+        });
+    });
+})();
+</script>
+{% endblock %}
