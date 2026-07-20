@@ -7,7 +7,7 @@ import re
 import base64
 
 app = Flask(__name__)
-BASE_URL = "https://ww1.anoboy.boo/"
+BASE_URL = "https://anoboy.xyz/"
 HEADERS = {"User-Agent": "Mozilla/5.0"}
 
 class AnimeScraper:
