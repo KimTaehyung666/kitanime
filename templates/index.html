@@ -18,7 +18,7 @@
 
 <div class="cgrid">
 {% for anime in anime_list %}
-<a href="/anime/{{ anime.link.replace('https://ww1.anoboy.boo/','') }}" class="acard">
+<a href="/anime/{{ anime.link.replace('https://anoboy.quest/','') }}" class="acard">
     {% if current_page == 1 %}<span class="abadge badge-new">NEW</span>{% endif %}
     {% if anime.episode %}<span class="abadge badge-eps"><i class="fas fa-play"></i>Eps {{ anime.episode }}</span>{% endif %}
     <img src="{{ anime.cover }}" alt="{{ anime.title }}"
@@ -52,7 +52,7 @@
 </div>
 <div class="cgrid">
 {% for m in featured_movies %}
-<a href="/anime/{{ m.link.replace('https://ww1.anoboy.boo/','') }}" class="acard">
+<a href="/anime/{{ m.link.replace('https://anoboy.quest/','') }}" class="acard">
     <span class="abadge badge-movie">MOVIE</span>
     <img src="{{ m.cover }}" alt="{{ m.title }}" loading="lazy"
          onerror="this.src='https://via.placeholder.com/300x450/e5192c/fff?text=KN'">

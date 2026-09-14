@@ -7,7 +7,7 @@ import re
 import base64
 
 app = Flask(__name__)
-BASE_URL = "https://anoboy.xyz/"
+BASE_URL = "https://anoboy.quest/"
 HEADERS = {"User-Agent": "Mozilla/5.0"}
 
 class AnimeScraper:
@@ -183,7 +183,7 @@ class AnimeScraper:
                 for link in all_links:
                     href = link.get('href', '')
                     if ('one-punch' in href.lower() or 
-                        any(pattern in href for pattern in ['/201', '/202', 'anoboy.boo/201', 'anoboy.boo/202'])):
+                        any(pattern in href for pattern in ['/201', '/202', 'anoboy.quest/201', 'anoboy.quest/202'])):
                         
                         amv_div = link.find('div', class_='amv')
                         if not amv_div:
@@ -315,121 +315,6 @@ class AnimeScraper:
             return result[:24]
         except Exception:
             return []
-
-    def get_schedule(self):
-        """Ambil jadwal rilis anime dari halaman seasonal anoboy.
-
-        Sumber (/uploads/jadwal.php) mengelompokkan anime per TIPE
-        (TV New, TV Continuing, ONA, OVA, Movie, Special), bukan per hari.
-        Method ini mengembalikan dua bentuk sekaligus:
-          - "by_day":  dict {Senin..Minggu: [anime]} dihitung dari tanggal mulai
-          - "by_type": list [{type, items:[anime]}] sesuai urutan sumber
-        """
-        DAYS = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"]
-        empty = {"by_day": {d: [] for d in DAYS}, "by_type": [], "days": DAYS}
-        try:
-            url = urljoin(self.base_url, "uploads/jadwal.php")
-            r = requests.get(url, headers=HEADERS, timeout=20)
-            soup = BeautifulSoup(r.text, "html.parser")
-
-            by_day = {d: [] for d in DAYS}
-            by_type = []
-            type_index = {}
-            current_type = None
-
-            # Telusuri header tipe dan blok anime sesuai urutan dokumen
-            nodes = soup.find_all(
-                'div',
-                class_=lambda c: c and (
-                    'anime-header' in c or 'js-anime-category-producer' in c
-                )
-            )
-
-            for node in nodes:
-                classes = node.get('class', [])
-
-                if 'anime-header' in classes:
-                    label = node.get_text(strip=True)
-                    if label:
-                        current_type = label
-                        if label not in type_index:
-                            type_index[label] = []
-                            by_type.append({"type": label, "items": type_index[label]})
-                    continue
-
-                # Blok anime
-                title_tag = node.find('a', class_='link-title')
-                title = title_tag.get_text(strip=True) if title_tag else ""
-                if not title:
-                    continue
-
-                img = node.find('img')
-                cover = ""
-                if img and img.get('src'):
-                    cover = img['src']
-
-                score_tag = node.find('span', class_='js-score')
-                score = score_tag.get_text(strip=True) if score_tag else "0"
-                try:
-                    score = "" if float(score) == 0 else score
-                except ValueError:
-                    pass
-
-                date_tag = node.find('span', class_='js-start_date')
-                raw_date = date_tag.get_text(strip=True) if date_tag else ""
-                weekday = self.weekday_from_yyyymmdd(raw_date)
-
-                anime = {
-                    "title": self.clean_title(title),
-                    "cover": cover,
-                    "score": score,
-                    "start_date": self.format_start_date(raw_date),
-                    "type": current_type or "Lainnya",
-                    "day": weekday,
-                    "search_q": self.title_to_query(title),
-                }
-
-                if current_type and current_type in type_index:
-                    type_index[current_type].append(anime)
-                if weekday:
-                    by_day[weekday].append(anime)
-
-            # Buang grup tanpa item (mis. banner musim "NEW SPRING ...")
-            by_type = [g for g in by_type if g["items"]]
-
-            return {"by_day": by_day, "by_type": by_type, "days": DAYS}
-        except Exception:
-            return empty
-
-    @staticmethod
-    def weekday_from_yyyymmdd(raw):
-        """Ubah tanggal 'YYYYMMDD' jadi nama hari Indonesia. '' jika invalid."""
-        DAYS = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"]
-        if not raw or len(raw) != 8 or not raw.isdigit():
-            return ""
-        try:
-            y, m, d = int(raw[:4]), int(raw[4:6]), int(raw[6:8])
-            # Algoritma Sakamoto: 0=Minggu .. 6=Sabtu
-            t = [0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4]
-            yy = y - (1 if m < 3 else 0)
-            w = (yy + yy // 4 - yy // 100 + yy // 400 + t[m - 1] + d) % 7
-            # Petakan ke daftar Senin-first
-            return DAYS[(w + 6) % 7]
-        except (ValueError, IndexError):
-            return ""
-
-    @staticmethod
-    def format_start_date(raw):
-        """Ubah 'YYYYMMDD' jadi 'DD MMM YYYY' (Indonesia). '' jika invalid."""
-        if not raw or len(raw) != 8 or not raw.isdigit():
-            return ""
-        MONTHS = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
-                  "Jul", "Agu", "Sep", "Okt", "Nov", "Des"]
-        try:
-            y, m, d = raw[:4], int(raw[4:6]), int(raw[6:8])
-            return f"{d:02d} {MONTHS[m - 1]} {y}"
-        except (ValueError, IndexError):
-            return ""
 
     @staticmethod
     def title_to_query(title):
@@ -575,11 +460,11 @@ class AnimeScraper:
             # METHOD 3: Fallback - cari dari season list
             if not prev_next["prev"] and not prev_next["next"]:
                 seasons = self.extract_seasons_for_nav(soup)
-                current_path = current_url.replace('https://ww1.anoboy.boo/', '')
+                current_path = current_url.replace('https://anoboy.quest/', '')
                 
                 for season in seasons:
                     for i, episode in enumerate(season["episodes"]):
-                        episode_path = episode["url"].replace('https://ww1.anoboy.boo/', '')
+                        episode_path = episode["url"].replace('https://anoboy.quest/', '')
                         if episode_path == current_path:
                             # Previous episode
                             if i > 0:
@@ -1151,15 +1036,10 @@ def movie_list():
     movie_list = scraper.get_movie_list(page)
     return render_template('movies.html', movie_list=movie_list, current_page=page)
 
-@app.route('/jadwal')
-def jadwal():
-    schedule = scraper.get_schedule()
-    return render_template('jadwal.html', schedule=schedule)
-
 @app.route('/anime/<path:anime_path>')
 def anime_detail_clean(anime_path):
     """Route bersih untuk detail anime"""
-    full_url = f"https://ww1.anoboy.boo/{anime_path}"
+    full_url = f"https://anoboy.quest/{anime_path}"
     detail = scraper.get_anime_detail(full_url)
 
     # Skip prev/next untuk movie — cek dari judul aja

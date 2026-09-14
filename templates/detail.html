@@ -125,14 +125,14 @@
                 {% if prev_episode or next_episode %}
                 <div class="epnav">
                     {% if prev_episode %}
-                    <a href="/anime/{{ prev_episode.url.replace('https://ww1.anoboy.boo/','') }}" class="epbtn" title="Ep Sebelumnya">
+                    <a href="/anime/{{ prev_episode.url.replace('https://anoboy.quest/','') }}" class="epbtn" title="Ep Sebelumnya">
                         <i class="fas fa-chevron-left"></i>
                     </a>
                     {% else %}
                     <button class="epbtn" disabled><i class="fas fa-chevron-left"></i></button>
                     {% endif %}
                     {% if next_episode %}
-                    <a href="/anime/{{ next_episode.url.replace('https://ww1.anoboy.boo/','') }}" class="epbtn" title="Ep Selanjutnya">
+                    <a href="/anime/{{ next_episode.url.replace('https://anoboy.quest/','') }}" class="epbtn" title="Ep Selanjutnya">
                         <i class="fas fa-chevron-right"></i>
                     </a>
                     {% else %}
@@ -197,7 +197,7 @@
             {% endif %}
             <div class="eplist" style="margin-bottom:12px">
                 {% for episode in season.episodes %}
-                <a href="/anime/{{ episode.url.replace('https://ww1.anoboy.boo/','') }}" class="epchip">
+                <a href="/anime/{{ episode.url.replace('https://anoboy.quest/','') }}" class="epchip">
                     {{ episode.title }}
                 </a>
                 {% endfor %}
