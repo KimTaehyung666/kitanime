@@ -467,6 +467,13 @@
         pointer-events:none;
     }
     #nprog.on{opacity:1;}
+
+    .home-hero{position:relative;overflow:hidden;padding:24px 22px;margin:2px 0 20px;border:1px solid rgba(229,25,44,.22);border-radius:16px;background:linear-gradient(135deg,rgba(229,25,44,.18),rgba(19,20,26,.96) 62%);box-shadow:0 14px 42px rgba(0,0,0,.18);}
+    .home-hero:after{content:'';position:absolute;width:180px;height:180px;right:-55px;top:-65px;border:1px solid rgba(255,255,255,.1);border-radius:50%;}
+    .hero-kicker{display:inline-flex;gap:6px;color:#ff9ca7;font-size:.68rem;font-weight:800;letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;}
+    .home-hero h1{position:relative;z-index:1;font-family:'Sora',sans-serif;font-size:clamp(1.35rem,4vw,2rem);font-weight:800;letter-spacing:-.7px;line-height:1.18;margin-bottom:9px;}
+    .home-hero p{position:relative;z-index:1;max-width:560px;color:rgba(232,232,240,.72);font-size:.86rem;line-height:1.65;margin:0;}
+    @media(max-width:479px){.home-hero{padding:20px 17px;border-radius:13px;margin-bottom:16px}}
     </style>
     {% block extra_css %}{% endblock %}
 </head>
