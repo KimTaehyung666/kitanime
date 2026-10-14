@@ -64,7 +64,7 @@ class AnimeScraper:
         """Get anime list with cover images"""
         url = BASE_URL if page == 1 else f"{BASE_URL}page/{page}/"
         try:
-            r = self.http_get(url, headers=HEADERS)
+            r = self.http_get(url)
             soup = BeautifulSoup(r.text, "html.parser")
             
             anime_list = []
@@ -147,7 +147,7 @@ class AnimeScraper:
             else:
                 search_url = f"{BASE_URL}page/{page}/?s={quote(keyword.replace(' ', '+'))}"
             
-            r = self.http_get(search_url, headers=HEADERS)
+            r = self.http_get(search_url)
             
             if r.status_code != 200:
                 return []
@@ -261,7 +261,7 @@ class AnimeScraper:
             else:
                 url = f"{BASE_URL}category/anime-movie/page/{page}/"
             
-            r = self.http_get(url, headers=HEADERS)
+            r = self.http_get(url)
             soup = BeautifulSoup(r.text, "html.parser")
             
             movie_list = []
@@ -313,7 +313,7 @@ class AnimeScraper:
                 else:
                     url = f"{BASE_URL}category/{category_slug}/page/{page}/"
 
-            r = self.http_get(url, headers=HEADERS)
+            r = self.http_get(url)
             soup = BeautifulSoup(r.text, "html.parser")
 
             result = []
@@ -374,7 +374,7 @@ class AnimeScraper:
     def get_home_movies(self):
         """Get featured movies from homepage sidebar"""
         try:
-            r = self.http_get(BASE_URL, headers=HEADERS)
+            r = self.http_get(BASE_URL)
             soup = BeautifulSoup(r.text, "html.parser")
             
             featured_movies = []
@@ -418,7 +418,7 @@ class AnimeScraper:
     def get_prev_next_episodes(self, current_url):
         """Get previous and next episode links - FIXED VERSION"""
         try:
-            r = self.http_get(current_url, headers=HEADERS)
+            r = self.http_get(current_url)
             soup = BeautifulSoup(r.text, "html.parser")
             
             prev_next = {"prev": None, "next": None}
@@ -568,7 +568,7 @@ class AnimeScraper:
     def get_anime_detail(self, page_url):
         """Get detailed anime information - FIXED UNTUK MOVIE (NO BATCH DOWNLOAD)"""
         try:
-            r = self.http_get(page_url, headers=HEADERS)
+            r = self.http_get(page_url)
             soup = BeautifulSoup(r.text, "html.parser")
             
             detail = {
