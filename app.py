@@ -1051,7 +1051,8 @@ def index():
     return render_template('index.html', 
                          anime_list=anime_list, 
                          featured_movies=featured_movies,
-                         current_page=page)
+                         current_page=page,
+                         genre_list=GENRE_LIST)
 
 @app.route('/search')
 def search():
@@ -1133,11 +1134,10 @@ GENRE_LIST = [
     ("shounen",        "Shounen"),
     ("super-power",    "Super Power"),
     ("slice-of-life",  "Slice of Life"),
-    ("sci-Fi",         "Sci-Fi"),
     ("seinen",         "Seinen"),
     ("space",          "Space"),
     ("sports",         "Sports"),
-    ("Supernatural",   "Supernatural"),
+    ("supernatural",   "Supernatural"),
     ("thriller",       "Thriller"),
     ("tokusatsu",      "Tokusatsu"),
     ("vampire",        "Vampire"),

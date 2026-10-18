@@ -468,12 +468,92 @@
     }
     #nprog.on{opacity:1;}
 
-    .home-hero{position:relative;overflow:hidden;padding:24px 22px;margin:2px 0 20px;border:1px solid rgba(229,25,44,.22);border-radius:16px;background:linear-gradient(135deg,rgba(229,25,44,.18),rgba(19,20,26,.96) 62%);box-shadow:0 14px 42px rgba(0,0,0,.18);}
-    .home-hero:after{content:'';position:absolute;width:180px;height:180px;right:-55px;top:-65px;border:1px solid rgba(255,255,255,.1);border-radius:50%;}
-    .hero-kicker{display:inline-flex;gap:6px;color:#ff9ca7;font-size:.68rem;font-weight:800;letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;}
-    .home-hero h1{position:relative;z-index:1;font-family:'Sora',sans-serif;font-size:clamp(1.35rem,4vw,2rem);font-weight:800;letter-spacing:-.7px;line-height:1.18;margin-bottom:9px;}
-    .home-hero p{position:relative;z-index:1;max-width:560px;color:rgba(232,232,240,.72);font-size:.86rem;line-height:1.65;margin:0;}
-    @media(max-width:479px){.home-hero{padding:20px 17px;border-radius:13px;margin-bottom:16px}}
+    /* ═══ SPOTLIGHT HERO (homepage) ═══ */
+    .spot{
+        position:relative;overflow:hidden;
+        border-radius:16px;border:1px solid var(--bdr);
+        margin:2px 0 16px;min-height:196px;
+        display:flex;align-items:stretch;
+        background:var(--bg2);
+        animation:fadeUp .35s ease both;
+    }
+    .spot-bg{
+        position:absolute;inset:-20px;
+        background-size:cover;background-position:center top;
+        filter:blur(22px) brightness(.5);
+    }
+    .spot-veil{
+        position:absolute;inset:0;
+        background:linear-gradient(100deg,rgba(8,9,13,.95) 25%,rgba(8,9,13,.55) 60%,rgba(8,9,13,.25));
+    }
+    .spot-in{
+        position:relative;z-index:1;
+        display:flex;gap:14px;align-items:center;
+        padding:18px;width:100%;
+    }
+    .spot-poster{
+        width:96px;flex-shrink:0;aspect-ratio:2/3;
+        object-fit:cover;border-radius:10px;
+        border:1px solid rgba(255,255,255,.18);
+        box-shadow:0 12px 30px rgba(0,0,0,.55);
+    }
+    .spot-txt{min-width:0;}
+    .spot-kick{
+        display:inline-flex;align-items:center;gap:6px;
+        color:#ff9ca7;font-size:.62rem;font-weight:800;
+        letter-spacing:1.2px;text-transform:uppercase;
+        margin-bottom:7px;
+    }
+    .spot-kick i{color:var(--red2);}
+    .spot-title{
+        font-family:'Sora',sans-serif;font-weight:800;
+        font-size:1.02rem;line-height:1.28;letter-spacing:-.3px;
+        color:#fff;margin-bottom:8px;
+        display:-webkit-box;-webkit-line-clamp:3;
+        -webkit-box-orient:vertical;overflow:hidden;
+    }
+    .spot-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:11px;}
+    .spot-eps{
+        background:var(--red);color:#fff;
+        font-size:.66rem;font-weight:700;
+        padding:3px 9px;border-radius:20px;
+    }
+    .spot-jam{color:rgba(255,255,255,.65);font-size:.72rem;}
+    .spot-jam i{margin-right:3px;}
+    .spot-cta{
+        display:inline-flex;align-items:center;gap:8px;
+        background:var(--red);color:#fff!important;
+        border-radius:10px;padding:9px 18px;
+        font:700 .78rem 'Sora',sans-serif;
+        text-decoration:none;transition:all .2s;
+        box-shadow:0 6px 20px rgba(229,25,44,.35);
+    }
+    .spot-cta:hover{background:var(--red2);transform:translateY(-1px);}
+    .spot-cta i{font-size:.68rem;}
+    @media(min-width:640px){
+        .spot{min-height:220px;}
+        .spot-poster{width:124px;}
+        .spot-title{font-size:1.3rem;}
+        .spot-in{padding:22px;}
+    }
+    @media(max-width:479px){.spot{border-radius:13px;}}
+
+    /* ═══ GENRE CHIPS (homepage) ═══ */
+    .chips{
+        display:flex;gap:7px;overflow-x:auto;
+        padding:2px 2px 12px;margin-bottom:4px;
+        scrollbar-width:none;-webkit-overflow-scrolling:touch;
+    }
+    .chips::-webkit-scrollbar{display:none;}
+    .chip{
+        flex-shrink:0;display:inline-flex;align-items:center;gap:6px;
+        background:var(--bg2);border:1px solid var(--bdr);
+        color:var(--txt);border-radius:20px;
+        padding:7px 14px;font-size:.74rem;font-weight:600;
+        text-decoration:none;transition:all .18s;white-space:nowrap;
+    }
+    .chip i{font-size:.66rem;color:var(--red);}
+    .chip:hover{border-color:var(--red);color:var(--red);background:var(--rdim);transform:translateY(-1px);}
 
     /* ═══ Kitanime redesign ═══ */
     body{background:radial-gradient(circle at 85% -10%,rgba(229,25,44,.09),transparent 30%),var(--bg);}
@@ -563,7 +643,6 @@
                     <li><a class="dropdown-item" href="/genre/romance"><i class="fas fa-heart me-2"></i>Romance</a></li>
                     <li><a class="dropdown-item" href="/genre/samurai"><i class="fas fa-torii-gate me-2"></i>Samurai</a></li>
                     <li><a class="dropdown-item" href="/genre/school"><i class="fas fa-school me-2"></i>School</a></li>
-                    <li><a class="dropdown-item" href="/genre/sci-Fi"><i class="fas fa-flask me-2"></i>Sci-Fi</a></li>
                     <li><a class="dropdown-item" href="/genre/seinen"><i class="fas fa-user me-2"></i>Seinen</a></li>
                     <li><a class="dropdown-item" href="/genre/shoujo"><i class="fas fa-user-pen me-2"></i>Shoujo</a></li>
                     <li><a class="dropdown-item" href="/genre/shounen"><i class="fas fa-bolt me-2"></i>Shounen</a></li>
@@ -571,7 +650,7 @@
                     <li><a class="dropdown-item" href="/genre/space"><i class="fas fa-rocket me-2"></i>Space</a></li>
                     <li><a class="dropdown-item" href="/genre/sports"><i class="fas fa-trophy me-2"></i>Sports</a></li>
                     <li><a class="dropdown-item" href="/genre/super-power"><i class="fas fa-star me-2"></i>Super Power</a></li>
-                    <li><a class="dropdown-item" href="/genre/Supernatural"><i class="fas fa-eye me-2"></i>Supernatural</a></li>
+                    <li><a class="dropdown-item" href="/genre/supernatural"><i class="fas fa-eye me-2"></i>Supernatural</a></li>
                     <li><a class="dropdown-item" href="/genre/thriller"><i class="fas fa-biohazard me-2"></i>Thriller</a></li>
                     <li><a class="dropdown-item" href="/genre/vampire"><i class="fas fa-droplet me-2"></i>Vampire</a></li>
                     <li><hr class="dropdown-divider"></li>
