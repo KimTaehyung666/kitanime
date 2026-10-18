@@ -7,19 +7,15 @@
     <div class="spot-bg" style="background-image:url('{{ h.cover }}')"></div>
     <div class="spot-veil"></div>
     <div class="spot-in">
-        <img class="spot-poster" src="{{ h.cover }}" alt="{{ h.title }}"
-             onerror="this.src='https://via.placeholder.com/300x450/e5192c/fff?text=KN'">
-        <div class="spot-txt">
-            <div class="spot-kick"><i class="fas fa-bolt"></i> Baru rilis</div>
-            <div class="spot-title">{{ h.title }}</div>
-            <div class="spot-meta">
-                {% if h.episode %}<span class="spot-eps">Episode {{ h.episode }}</span>{% endif %}
-                <span class="spot-jam"><i class="far fa-clock"></i> {{ h.jam }}</span>
-            </div>
-            <a class="spot-cta" href="/anime/{{ h.link.replace('https://anoboy.quest/','') }}">
-                <i class="fas fa-play"></i> Nonton Sekarang
-            </a>
+        <div class="spot-kick"><i class="fas fa-bolt"></i> Baru rilis</div>
+        <div class="spot-title">{{ h.title }}</div>
+        <div class="spot-meta">
+            {% if h.episode %}<span class="spot-eps">Episode {{ h.episode }}</span>{% endif %}
+            <span class="spot-jam"><i class="far fa-clock"></i> {{ h.jam }}</span>
         </div>
+        <a class="spot-cta" href="/anime/{{ h.link.replace('https://anoboy.quest/','') }}">
+            <i class="fas fa-play"></i> Nonton Sekarang
+        </a>
     </div>
 </section>
 {% endif %}

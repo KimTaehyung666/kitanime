@@ -154,12 +154,9 @@
     /* ═══ CARD GRID ═══ */
     .cgrid{
         display:grid;
-        grid-template-columns:repeat(3,1fr);
-        gap:9px;
+        grid-template-columns:repeat(2,1fr);
+        gap:10px;
     }
-    @media(min-width:480px){.cgrid{grid-template-columns:repeat(4,1fr);}}
-    @media(min-width:640px){.cgrid{grid-template-columns:repeat(5,1fr);}}
-    @media(min-width:900px){.cgrid{grid-template-columns:repeat(6,1fr);}}
 
     .acard{
         display:block;text-decoration:none;
@@ -468,36 +465,27 @@
     }
     #nprog.on{opacity:1;}
 
-    /* ═══ SPOTLIGHT HERO (homepage) ═══ */
+    /* ═══ SPOTLIGHT HERO (homepage) — landscape ═══ */
     .spot{
         position:relative;overflow:hidden;
         border-radius:16px;border:1px solid var(--bdr);
-        margin:2px 0 16px;min-height:196px;
-        display:flex;align-items:stretch;
+        margin:2px 0 16px;aspect-ratio:16/10;
         background:var(--bg2);
         animation:fadeUp .35s ease both;
     }
     .spot-bg{
-        position:absolute;inset:-20px;
-        background-size:cover;background-position:center top;
-        filter:blur(22px) brightness(.5);
+        position:absolute;inset:0;
+        background-size:cover;background-position:center;
+        filter:brightness(.55);
     }
     .spot-veil{
         position:absolute;inset:0;
-        background:linear-gradient(100deg,rgba(8,9,13,.95) 25%,rgba(8,9,13,.55) 60%,rgba(8,9,13,.25));
+        background:linear-gradient(180deg,rgba(8,9,13,.12) 20%,rgba(8,9,13,.55) 55%,rgba(8,9,13,.95));
     }
     .spot-in{
-        position:relative;z-index:1;
-        display:flex;gap:14px;align-items:center;
-        padding:18px;width:100%;
+        position:absolute;z-index:1;
+        left:0;right:0;bottom:0;padding:14px;
     }
-    .spot-poster{
-        width:96px;flex-shrink:0;aspect-ratio:2/3;
-        object-fit:cover;border-radius:10px;
-        border:1px solid rgba(255,255,255,.18);
-        box-shadow:0 12px 30px rgba(0,0,0,.55);
-    }
-    .spot-txt{min-width:0;}
     .spot-kick{
         display:inline-flex;align-items:center;gap:6px;
         color:#ff9ca7;font-size:.62rem;font-weight:800;
@@ -509,7 +497,7 @@
         font-family:'Sora',sans-serif;font-weight:800;
         font-size:1.02rem;line-height:1.28;letter-spacing:-.3px;
         color:#fff;margin-bottom:8px;
-        display:-webkit-box;-webkit-line-clamp:3;
+        display:-webkit-box;-webkit-line-clamp:2;
         -webkit-box-orient:vertical;overflow:hidden;
     }
     .spot-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:11px;}
@@ -531,10 +519,9 @@
     .spot-cta:hover{background:var(--red2);transform:translateY(-1px);}
     .spot-cta i{font-size:.68rem;}
     @media(min-width:640px){
-        .spot{min-height:220px;}
-        .spot-poster{width:124px;}
-        .spot-title{font-size:1.3rem;}
-        .spot-in{padding:22px;}
+        .spot{aspect-ratio:21/9;}
+        .spot-in{padding:20px;}
+        .spot-title{font-size:1.35rem;}
     }
     @media(max-width:479px){.spot{border-radius:13px;}}
 
@@ -576,11 +563,15 @@
     .content-head h1{font-family:'Sora',sans-serif;font-size:1.35rem;line-height:1.2;letter-spacing:-.5px;font-weight:800;}
     .shd{margin-top:24px!important;margin-bottom:13px;}
     .shd h2{font-size:1rem;}
-    .cgrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
-    .acard{border-radius:12px;box-shadow:0 7px 18px rgba(0,0,0,.12);}
+    /* Grid pakai flexbox + center: sisa card di baris terakhir ketengah otomatis */
+    .cgrid{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;}
+    .cgrid > div{flex:0 0 100%;}
+    .acard{flex:0 0 calc(50% - 5px);min-width:0;}
+    .acard{border-radius:12px;box-shadow:0 7px 18px rgba(0,0,0,.12);aspect-ratio:auto;}
     .acard:hover{transform:translateY(-5px);box-shadow:0 16px 32px rgba(0,0,0,.42),0 0 0 1px rgba(229,25,44,.25);}
-    .acard img{height:70%;}
-    .acard-body{height:30%;padding:8px 9px;}
+    .acard img{height:auto;aspect-ratio:16/10;object-position:center;}
+    .acard-body{height:auto;min-height:66px;padding:8px 10px;}
+    .acard-title{font-size:.74rem;-webkit-line-clamp:2;}
     .acard-title{font-size:.72rem;}
     .acard-time{font-size:.62rem;}
     .abadge{top:8px;left:8px;border-radius:20px;padding:3px 7px;}
@@ -588,9 +579,9 @@
     .pag{margin:22px 0 4px;gap:6px;}
     .pag a,.pag span{padding:7px 12px;border-radius:20px;}
     footer{border-top:1px solid var(--bdr);padding:22px 14px 28px;}
-    @media(min-width:520px){.cgrid{grid-template-columns:repeat(4,minmax(0,1fr));}}
-    @media(min-width:760px){.cgrid{grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;}}
-    @media(min-width:1050px){.cgrid{grid-template-columns:repeat(6,minmax(0,1fr));}}
+    @media(min-width:560px){.acard{flex-basis:calc(33.333% - 7px);}}
+    @media(min-width:900px){.cgrid{gap:12px;}.acard{flex-basis:calc(25% - 8px);}}
+    @media(min-width:1200px){.acard{flex-basis:calc(20% - 8px);}}
     </style>
     {% block extra_css %}{% endblock %}
 </head>
