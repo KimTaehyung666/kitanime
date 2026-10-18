@@ -519,9 +519,23 @@
     .spot-cta:hover{background:var(--red2);transform:translateY(-1px);}
     .spot-cta i{font-size:.68rem;}
     @media(min-width:640px){
-        .spot{aspect-ratio:21/9;}
-        .spot-in{padding:20px;}
-        .spot-title{font-size:1.35rem;}
+        .spot{
+            aspect-ratio:21/9;min-height:300px;
+            box-shadow:0 24px 70px rgba(0,0,0,.5),
+                       inset 0 0 0 1px rgba(229,25,44,.14);
+        }
+        .spot-in{padding:26px 30px;}
+        .spot-kick{font-size:.68rem;margin-bottom:10px;}
+        .spot-title{font-size:1.55rem;max-width:660px;margin-bottom:10px;}
+        .spot-meta{margin-bottom:14px;}
+        .spot-eps{font-size:.72rem;padding:4px 11px;}
+        .spot-jam{font-size:.8rem;}
+        .spot-cta{padding:11px 26px;font-size:.85rem;border-radius:12px;}
+    }
+    @media(min-width:1050px){
+        .spot{min-height:360px;}
+        .spot-in{padding:32px 38px;}
+        .spot-title{font-size:1.85rem;max-width:720px;}
     }
     @media(max-width:479px){.spot{border-radius:13px;}}
 
