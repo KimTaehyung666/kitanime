@@ -9,6 +9,31 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for
 from urllib.parse import urljoin, quote, urlparse
 import re
 import base64
+from datetime import datetime, timedelta, timezone
+
+WIB = timezone(timedelta(hours=7))
+_HARI = {'senin': 0, 'selasa': 1, 'rabu': 2, 'kamis': 3, 'jumat': 4, 'sabtu': 5, 'minggu': 6}
+
+def is_fresh(jam_text):
+    """True bila jam upload anoboy ('UP Selasa, 23:58 Wib') masih < 24 jam.
+
+    Hari tanpa tanggal dipetakan ke kemunculan terakhir hari itu (WIB);
+    bila hasilnya masih di masa depan, mundur 7 hari. Jam tak terbaca = False.
+    """
+    try:
+        m = re.search(r'(senin|selasa|rabu|kamis|jumat|sabtu|minggu)\D*?(\d{1,2})[:.](\d{2})',
+                      (jam_text or '').lower())
+        if not m:
+            return False
+        now = datetime.now(WIB)
+        days_ago = (now.weekday() - _HARI[m.group(1)]) % 7
+        occ = (now - timedelta(days=days_ago)).replace(
+            hour=int(m.group(2)), minute=int(m.group(3)), second=0, microsecond=0)
+        if occ > now:
+            occ -= timedelta(days=7)
+        return (now - occ) < timedelta(hours=24)
+    except Exception:
+        return False
 
 app = Flask(__name__)
 BASE_URL = "https://anoboy.quest/"
@@ -1047,6 +1072,8 @@ scraper = AnimeScraper()
 def index():
     page = request.args.get('page', 1, type=int)
     anime_list = scraper.get_anime_list(page)
+    for a in anime_list:
+        a['is_new'] = is_fresh(a.get('jam', ''))
     featured_movies = scraper.get_home_movies()
     return render_template('index.html', 
                          anime_list=anime_list, 
