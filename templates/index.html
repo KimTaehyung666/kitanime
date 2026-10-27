@@ -38,7 +38,8 @@
 <div class="cgrid">
 {% for anime in anime_list %}
 <a href="/anime/{{ anime.link.replace('https://anoboy.quest/','') }}" class="acard">
-    {% if anime.is_new %}<span class="abadge badge-new">NEW</span>{% endif %}
+    {% if anime.is_finished %}<span class="abadge badge-tamat">Tamat</span>
+    {% elif anime.is_new %}<span class="abadge badge-new">NEW</span>{% endif %}
     {% if anime.episode %}<span class="abadge badge-eps"><i class="fas fa-play"></i>Eps {{ anime.episode }}</span>{% endif %}
     <img src="{{ anime.cover }}" alt="{{ anime.title }}"
          loading="lazy"

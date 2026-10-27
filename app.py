@@ -108,12 +108,13 @@ class AnimeScraper:
                             cover_url = self.resolve_url(img['src'])
 
                         raw_title = title_div.text.strip()
-                        base_title, episode = self.extract_episode(raw_title)
+                        base_title, episode, is_finished = self.extract_episode(raw_title)
                         clean_title = self.clean_title(base_title)
 
                         anime_data = {
                             "title": clean_title,
                             "episode": episode,
+                            "is_finished": is_finished,
                             "jam": jam_div.text.strip() if jam_div else "Unknown",
                             "link": link['href'],
                             "cover": cover_url
@@ -137,30 +138,39 @@ class AnimeScraper:
     def extract_episode(title):
         """Pisahkan nomor episode dari judul.
 
-        'Kore Kaite Shine Episode 1' -> ('Kore Kaite Shine', '1')
-        Mengembalikan (judul_tanpa_episode, nomor_episode). Nomor '' jika tidak ada.
+        'Kore Kaite Shine Episode 1' -> ('Kore Kaite Shine', '1', False)
+        'Bleach ... Episode 10 Selesai' -> ('Bleach ...', '10', True)
+        Mengembalikan (judul_tanpa_episode, nomor_episode, sudah_tamat).
+        Nomor '' jika tidak ada. Penanda tamat ('Selesai'/'Complete'/'Tamat')
+        di ujung judul ikut dibuang dari judul, karena statusnya pindah ke badge.
         """
         t = title.strip()
+        finished = False
+        m_fin = re.search(r'\s*[-–]?\s*(selesai|complete|tamat)\s*$', t, re.IGNORECASE)
+        if m_fin:
+            finished = True
+            t = t[:m_fin.start()].strip()
         m = re.search(r'\s*[-–]?\s*Episode\s*(\d+(?:\.\d+)?)\s*$', t, re.IGNORECASE)
         if not m:
             m = re.search(r'\s*[-–]?\s*Eps?\.?\s*(\d+(?:\.\d+)?)\s*$', t, re.IGNORECASE)
         if m:
-            return t[:m.start()].strip(), m.group(1)
-        return t, ""
+            return t[:m.start()].strip(), m.group(1), finished
+        return t, "", finished
 
     @classmethod
     def attach_episode(cls, items):
         """Untuk tiap item di list: pisahkan nomor episode dari judul.
 
-        Menambah key 'episode' dan merapikan 'title'. Aman dipanggil
-        berkali-kali (idempotent). Mengembalikan list yang sama.
+        Menambah key 'episode', 'is_finished', dan merapikan 'title'.
+        Aman dipanggil berkali-kali (idempotent). Mengembalikan list yang sama.
         """
         for it in items:
             if 'episode' in it:
                 continue
-            base, ep = cls.extract_episode(it.get('title', ''))
+            base, ep, fin = cls.extract_episode(it.get('title', ''))
             it['title'] = base
             it['episode'] = ep
+            it['is_finished'] = fin
         return items
 
 
